@@ -1,12 +1,12 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2013-03-19T16:43:15
+# Project created by QtCreator 2013-03-05T11:34:24
 #
 #-------------------------------------------------
 
 QT       += core gui
 
-TARGET = home
+TARGET = app
 TEMPLATE = app
 
 
