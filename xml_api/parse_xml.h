@@ -1,0 +1,23 @@
+#ifndef LIBXML2_PARSE
+#define LIBXML2_PARSE
+struct RAISE{
+	char src[50];
+	int winid;
+
+};
+typedef enum {
+	OB_START_APP,
+	OB_KILL_APP,
+	OB_EXIT_APP,
+	OB_SET_FULLSCREEN,
+	OB_SET_HIDE,//
+	OB_SET_MIN_RUN,
+	OB_SET_BOTTOM,
+	OB_SET_TOP,
+	OB_SET_MAXIMIZE,
+	OB_GET_APPS_LIST,
+	OB_GET_APP_STATE,
+	OB_EXIT_OB
+}WM_METHOD;
+
+#endif
