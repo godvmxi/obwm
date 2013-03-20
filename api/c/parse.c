@@ -1,65 +1,70 @@
-/*******************************************
-* compile: gcc -I/usr/include/libxml2/ -lxml2 tree1.c
-* usage: tree2 filename_or_URL
-*
-*******************************************/
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <libxml/parser.h>
-#include <libxml/tree.h>
+#include <libxml/xpath.h>
 
-#ifdef LIBXML_TREE_ENABLED
+static xmlDocPtr
+getDocPtr(char* docname) {
+	xmlDocPtr doc = NULL;
+	xmlKeepBlanksDefault(0);
 
-static void
-print_element_names(xmlNode * a_node)
-{
-    xmlNode *cur_node = NULL;
-
-    for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
-        if (cur_node->type == XML_ELEMENT_NODE) {
-            printf("node type: Element, name: %s\n", cur_node->name);
-        }
-        print_element_names(cur_node->children);
-    }
+	doc = xmlParseFile(docname);
+	if(NULL == doc) {
+		fprintf(stderr, "document cannot be parsed!\n");
+		exit(1);
+	}
+	return doc;
 }
 
-/**
-* Simple example to parse a file called "file.xml",
-* walk down the DOM, and print the name of the
-* xml elements nodes.
-*/
-int
-main(int argc, char **argv)
-{
-    xmlDoc *doc = NULL;
-    xmlNode *root_element = NULL;
+static xmlXPathObjectPtr
+getXPathObjectPtr(xmlDocPtr doc, xmlChar* xpath_exp) {
+	xmlXPathObjectPtr result;
+	xmlXPathContextPtr context;
+	
+	context = xmlXPathNewContext(doc);
+	result = xmlXPathEvalExpression((const xmlChar*)xpath_exp, context);
+	xmlXPathFreeContext(context);
 
-    if (argc != 2)
-        return(1);
+	if(NULL == result) {
+		fprintf(stderr, "eval expression error!\n");
+		return NULL;
+	}
 
-    //LIBXML_TEST_VERSION
-
-    /*parse the file and get the DOM */
-    doc = xmlReadFile(argv[1], NULL, 0);
-
-    if (doc == NULL) {
-        printf("error: could not parse file %s\n", argv[1]);
-    }
-
-    /*Get the root element node */
-    root_element = xmlDocGetRootElement(doc);
-
-    print_element_names(root_element);
-
-    /*free the document */
-    xmlFreeDoc(doc);
-
-    //xmlCleanupParser();
-
-    return 0;
+	if(xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+		fprintf(stderr, "empty node set!\n");
+		xmlXPathFreeObject(result);
+		return NULL;
+	}
+	return result;
 }
-#else
-int main(void) {
-    fprintf(stderr, "Tree support not compiled in\n");
-    exit(1);
+
+int main() {
+	char* docname = "web.html";
+	xmlDocPtr doc = NULL;
+	xmlXPathObjectPtr xpath_obj = NULL;
+	xmlNodeSetPtr nodeset = NULL;
+	xmlChar* xpath_exp = (xmlChar*)"//pid";
+	xmlChar* uri;
+
+	doc = getDocPtr(docname);
+
+	xpath_obj = getXPathObjectPtr(doc, xpath_exp);
+	//printf("pid ->%s ->%s\n",xpath_obj->name,NULL);
+	if(NULL != xpath_obj) {
+		nodeset = xpath_obj->nodesetval;
+		int i = 0;
+		for(i = 0; i < nodeset->nodeNr; i ++) {
+			uri = xmlGetProp(nodeset->nodeTab[i],(const xmlChar*)"href");
+			printf("link address:%s->%s->%s\n",uri,nodeset->nodeTab[i]->name,
+			xmlNodeGetContent(nodeset->nodeTab[i]));
+			xmlFree(uri);
+		}
+		xmlXPathFreeObject(xpath_obj);
+	}
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
+	
+	return 1;
 }
-#endif
+
