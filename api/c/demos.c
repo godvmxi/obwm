@@ -20,8 +20,12 @@ int sockfd = 0;
 OB_SOCKET obSocket ;
 int main_init(int argc, char **argv);
 int main(int argc, char **argv){
-	start_socket_server(3333);
-	socket_xml_exec();
+	printf("system->%d\n",system("ls"));
+	printf("system->%d\n",system("a"));
+	printf("system->%d\n",system("./a.out"));
+	printf("system->%d\n",system("app"));
+//	start_socket_server(3333);
+//	socket_xml_exec();
 	//main_init(argc,argv);
 }
 int main_init(int argc, char **argv)

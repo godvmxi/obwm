@@ -1,9 +1,11 @@
-target :tree.o parse.o
-	gcc -I/usr/include/libxml2/ -lxml2 create.o -o create
-	gcc -I/usr/include/libxml2/ -lxml2 parse.o  -o parse
-tree.o :create.c
-	gcc -I/usr/include/libxml2/ -lxml2 -c create.c
-parse.o :parse.c
-	gcc -I/usr/include/libxml2/ -lxml2 -c parse.c
+target :socket_xml demos
+socket_xml :socket_xml.o
+	gcc -I/usr/include/libxml2/ -lxml2 socket_xml.o -o socket_xml
+socket_xml.o :socket_xml.c
+	gcc -I/usr/include/libxml2/ -lxml2 -c socket_xml.c
+demos :demos.o
+	gcc -I/usr/include/libxml2/ -lxml2 demos.o -o demos
+demos.o :demos.c
+	gcc -I/usr/include/libxml2/ -lxml2 -c demos.c
 clean :
-	rm -rf create parse  *.o
+	-rm -rf  *.o socket_xml
