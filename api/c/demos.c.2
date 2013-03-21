@@ -7,28 +7,24 @@
  * Date: 
  * History: 
  * *****************************************************************************/
-
-
 #include <stdio.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h> 
-#include "socket_xml.h"                   
+#include "parse_xml.h"                   
 
 /* global var*/
 int sockfd = 0;
-OB_SOCKET obSocket ;
-int main_init(int argc, char **argv);
-int main(int argc, char **argv){
-	start_socket_server(3333);
-	socket_xml_exec();
-	//main_init(argc,argv);
+
+int main(int argc, char **argv)
+{
+	main_test(argc,argv);
 }
-int main_init(int argc, char **argv)
+int main_test(int argc, char **argv)
 {
        xmlDocPtr doc = NULL,doc2=NULL;       /* document pointer */
 	xmlChar *buf;
-	int recvBufSize,sendBufSize;
+	int bufferSize;
        xmlNodePtr root_node = NULL, node1 = NULL, node2 = NULL,node3 = NULL; /* node pointers */                                                      
        //Creates a new document, a node and set it as a root node
        doc = xmlNewDoc(BAD_CAST "1.0");
@@ -54,15 +50,20 @@ int main_init(int argc, char **argv)
 	node2 = xmlNewChild(node1,NULL,BAD_CAST "extend",BAD_CAST "0");	
 
        xmlSaveFormatFileEnc(argc > 1 ? argv[1] : "-", doc, "UTF-8", 1); 
-	xmlDocDumpFormatMemory(doc,&buf,&recvBufSize,1);
-	printf("char ->%d\n%s",recvBufSize,buf);
+	xmlDocDumpFormatMemory(doc,&buf,&bufferSize,1);
+	printf("char ->%d\n%s",bufferSize,buf);
+	while(1){
+		send_udp_data(buf,bufferSize);
+		sleep(10);
+
+	
+	}
        xmlFreeDoc(doc);
 	//read from memory
 	//doc2 = xmlReadMemory(buf,bufferSize,NULL,NULL,0);
 	int type = 0;
-		
-	start_socket_server(3333);
-	socket_xml_exec();
+	parse_xml_from_buf(buf,bufferSize,&type);
+	socket_xml_test();
 	//printf("read from char *-->\n");
 	//xmlSaveFormatFileEnc(argc > 1 ? argv[1] : "-", doc2, "UTF-8", 1); 
        xmlCleanupParser();
@@ -72,61 +73,52 @@ int main_init(int argc, char **argv)
 }
 void *get_client_from_app_info(OB_SOCKET *ob)
 {
-        return NULL;
+	return NULL;
 }
 int ob_start_app(OB_SOCKET *ob){
-	pid_t pid = fork();
-	if(pid < 0)
-		return -1;
-	else if(pid == 0){
-		//child pid
-		exec(ob->appInfo.cmd);	
-		exit(errno);	
-	}
-	else
-	    return 1;
+	return system(ob->appInfo.cmd);
 }
 int ob_kill_app(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_exit_app(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_set_full_app(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_set_max_app(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_set_min_app(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_set_layer_app(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_get_list_app(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_get_state_app(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_exit(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_restart(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_refresh(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_resize(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_move(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 int ob_resize_move(OB_SOCKET *ob){
-        return 1;
+	return 1;
 }
 void trint_element_names(xmlNode * a_node)
 {
@@ -187,16 +179,21 @@ int query_value_from_xpath(xmlDoc *doc,char *xpath,char **buf,int bufferSize)
 	else
 		return -1;
 }
-int parse_xml_from_buf(char *buf,int len,OB_SOCKET *ob){
+#define XML_BUF_SIZE 40
+void *parse_xml_from_buf(char *buf,int len,int *type){
+	OB_SOCKET obSocket,*ob;
+	ob = &obSocket;
+	char *tmp;
 	char fuck[XML_BUF_SIZE];
-	char *tmp = (char *)fuck;
+	tmp = fuck;
 	
 //	printf("parese xml from buf ->%d->%s",len,buf);
 	memset((void *)ob,0,sizeof(OB_SOCKET));
 	xmlDoc  *doc = xmlReadMemory((xmlChar *)buf,len,NULL,NULL,0);
 	if(doc == NULL){
-		printf("buf can't conver to xml\n");
-		return -1;
+		*type = 0;
+		printf("can convert\n");
+		return NULL;
 	}
 	printf("app comtrol data +++++++++++++++++++++\n");
 	query_value_from_xpath(doc,"//method",&tmp,XML_BUF_SIZE);
@@ -240,12 +237,10 @@ int parse_xml_from_buf(char *buf,int len,OB_SOCKET *ob){
 	query_value_from_xpath(doc,"//extend",&tmp,XML_BUF_SIZE);
 	printf("xpath extend -> %s\n",tmp);
 	ob->appData.extend = atoi(tmp);
-	return 1;
+	exec_socket_cmd(ob);
+	
 }
-int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
-{
-	xmlNodePtr dataNode  = xmlNewNode(NULL,BAD_CAST"data");
-	int state = 0;
+int exec_socket_cmd(OB_SOCKET *ob){
 	switch(ob->method)
 	{
 		case OB_START_APP :
@@ -292,20 +287,6 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 		default :
 			break;
 	}
-	char tmp[20];
-	xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
-       	xmlNodePtr root_node = xmlNewNode(NULL, BAD_CAST "root");
-       	xmlDocSetRootElement(doc, root_node); 
-	memset(tmp,0,20);
-	sprintf(tmp,"%d",ob->id);
-	xmlNewChild(root_node, NULL, BAD_CAST "id",BAD_CAST tmp); 
-	memset(tmp,0,20);
-	sprintf(tmp,"%d",ob->id);
-	xmlNewChild(root_node, NULL, BAD_CAST "state",BAD_CAST tmp); 
-	xmlAddChild(root_node,dataNode); 
-	
-	xmlDocDumpFormatMemory(doc,(xmlChar **)ack,ack_len,1);
-	
 }
 int  start_socket_server(int port)
 {
@@ -328,60 +309,42 @@ int  start_socket_server(int port)
 	}
 	printf("bind socket ok\n");
 }
-int  add_data_to_xml_node(xmlNode *node,char *key,char *value)
+void socket_xml_test(void)
 {
-	//add child data
-	if(node == NULL)
-	{
-		printf("xml node can't be null\n");
-		return -1;
-	}
-	if(xmlNewChild(node,NULL,BAD_CAST key ,BAD_CAST value) < 0)
-	{
-		printf("can,t add -> %s -->%s\n",key,value);
-		return -1;
-	}
-	return 1;
-}
-int  socket_xml_exec(void)
-{
-	static char rev[SOCKET_BUF_SIZE];
-	static char send[SOCKET_BUF_SIZE];
-	char *sendPtr = send;
-	int revBufSize = 0;
-	int sendBufSize = 0,sendResult = 0;
-	int state = 0;
-	static int counter = 0;
+	start_socket_server(3333);
+	char rev[512];
 	struct sockaddr_in servaddr, cliaddr;
 	socklen_t src_len;
-	
-	memset(rev,0,SOCKET_BUF_SIZE);
-	memset(send,0,SOCKET_BUF_SIZE);
-	memset(&cliaddr,0,sizeof(struct sockaddr_in));
-	printf("wait for net socket->%d\n",counter++);
-	revBufSize = recvfrom(sockfd, rev, SOCKET_BUF_SIZE, 0, (struct sockaddr *)&cliaddr, &src_len);
-	if(revBufSize < 0)
+	int state;
+	while(1){
+	printf("wait for net socket\n");
+	if(recvfrom(sockfd, rev, 512, 0, (struct sockaddr *)&cliaddr, &src_len)< 0)
         {
-		printf("receive error!!\n");
-		return -1;
+                       perror("receive error!\n");
+                       exit(0);
         }
-	
-	printf("receive data ->%d\n",revBufSize);
-	if(parse_xml_from_buf(rev,revBufSize,&obSocket) < 0){
-		printf("parse buf to xml error");
-		return -1;
+	printf("receive data ->%d->%s",src_len,rev);
+	parse_xml_from_buf(rev,512,&state);
+
 	}
-	exec_socket_cmd(&obSocket,&sendPtr,&sendBufSize,SOCKET_BUF_SIZE);
-	sendResult=sendto(sockfd, send, sendBufSize, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));	
-	if(revBufSize < 0)
-        {
-		printf("send ack data error!\n");
-		return -1;
-        }
-	else if(sendResult != sendBufSize){
-		printf("send ack data lost some -> %d - %d = %d\n",sendBufSize,sendResult, sendBufSize-sendResult);
-		return -1;
-	}
-	return 1;
+
 }
-	
+void send_udp_data(char *buf,int len)
+{
+	struct sockaddr_in s_addr;
+	int sock;
+	int addr_len;
+/* 创建 socket , 关键在于这个 SOCK_DGRAM */
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+		perror("socket");
+		exit(1);
+	} else
+		printf("create socket->%d\n\r",len);
+/* 设置对方地址和端口信息 */
+	s_addr.sin_family = AF_INET;
+	s_addr.sin_port = htons(3333);
+	s_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+	addr_len = sizeof(s_addr);
+	len = sendto(sock, buf,len, 0,(struct sockaddr *) &s_addr, addr_len);
+}

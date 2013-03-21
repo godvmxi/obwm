@@ -22,6 +22,7 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 /* macro define*/
 #define SOCKET_BUF_SIZE 1024
