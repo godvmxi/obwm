@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <sys/select.h>
 #include <signal.h>
-#include "debug.h"
+
 typedef struct _ObMainLoopTimer             ObMainLoopTimer;
 typedef struct _ObMainLoopSignal            ObMainLoopSignal;
 typedef struct _ObMainLoopSignalHandlerType ObMainLoopSignalHandlerType;
@@ -35,7 +35,6 @@ typedef struct _ObMainLoopFdHandlerType     ObMainLoopFdHandlerType;
    architecture... */
 #define NUM_SIGNALS 99
 extern int sockfd;
-extern int  socket_xml_exec(void) ;
 /* all created ObMainLoops. Used by the signal handler to pass along signals */
 static GSList *all_loops;
 
@@ -294,13 +293,9 @@ void ob_main_loop_run(ObMainLoop *loop)
 
             selset = loop->fd_set;
 			if(sockfd <=0 ){
-				syslog(LOG_INFO,"socket fd error->%d",sockfd);
+				syslog(LOG_INFO,"socket fd error");
 				exit(-1);
 
-			}
-			else{
-				FD_SET(sockfd,&selset);
-			//	syslog(LOG_INFO,"add socket fd");
 			}
             /* there is a small race condition here. if a signal occurs
                between this if() and the select() then we will not process
@@ -308,11 +303,8 @@ void ob_main_loop_run(ObMainLoop *loop)
                using GStaticMutex, and having the signal handler set 'wait'
                to 0 */
             if (!loop->signal_fired)
-                select(loop->fd_max + 2, &selset, NULL, NULL, wait);
-			if(FD_ISSET(sockfd,&selset)){
-				syslog(LOG_INFO,"socket can be read");
-				socket_xml_exec();
-			}
+                select(loop->fd_max + 1, &selset, NULL, NULL, wait);
+
             /* handle the X events with highest prioirity */
             if (FD_ISSET(loop->fd_x, &selset))
                 continue;

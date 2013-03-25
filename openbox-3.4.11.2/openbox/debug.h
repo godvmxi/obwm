@@ -20,7 +20,8 @@
 #define __ob__debug_h
 
 #include <glib.h>
-
+#include <stdio.h>
+#include <syslog.h>
 void ob_debug_show_output(gboolean enable);
 
 void ob_debug(const gchar *a, ...);

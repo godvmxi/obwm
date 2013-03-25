@@ -80,7 +80,7 @@ int ob_start_app(OB_SOCKET *ob){
 		return -1;
 	else if(pid == 0){
 		//child pid
-		exec(ob->appInfo.cmd);	
+	//	exec(ob->appInfo.cmd);	
 		exit(errno);	
 	}
 	else
