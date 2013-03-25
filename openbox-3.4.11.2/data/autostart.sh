@@ -42,3 +42,7 @@ DESKTOP_ENV="OPENBOX"
 if which /usr/share/openbox/xdg-autostart >/dev/null; then
   /usr/share/openbox/xdg-autostart $DESKTOP_ENV
 fi
+/home/sunbird/winid &
+/home/sunbird/winid &
+/home/sunbird/winid &
+/home/sunbird/winid &

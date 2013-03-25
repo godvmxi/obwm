@@ -849,7 +849,7 @@ int main_init(int argc, char **argv)
 
        xmlSaveFormatFileEnc(argc > 1 ? argv[1] : "-", doc, "UTF-8", 1); 
 	xmlDocDumpFormatMemory(doc,&buf,&recvBufSize,1);
-	printf("char ->%d\n%s",recvBufSize,buf);
+	syslog(LOG_INFO,"char ->%d\n%s",recvBufSize,buf);
        xmlFreeDoc(doc);
 	//read from memory
 	//doc2 = xmlReadMemory(buf,bufferSize,NULL,NULL,0);
@@ -857,7 +857,7 @@ int main_init(int argc, char **argv)
 		
 	start_socket_server(3333);
 	socket_xml_exec();
-	//printf("read from char *-->\n");
+	//syslog(LOG_INFO,"read from char *-->\n");
 	//xmlSaveFormatFileEnc(argc > 1 ? argv[1] : "-", doc2, "UTF-8", 1); 
        xmlCleanupParser();
        xmlMemoryDump();      //debug memory for regression tests
@@ -898,8 +898,31 @@ int ob_set_min_app(OB_SOCKET *ob){
 int ob_set_layer_app(OB_SOCKET *ob){
         return 1;
 }
-int ob_get_list_app(OB_SOCKET *ob){
-        return 1;
+int ob_get_list_app(OB_SOCKET *ob)
+{
+	syslog(LOG_INFO,"get app list");
+	Window *windows,*win_it;
+	ObClient *c;
+	GList *it;
+	guint size = g_list_length(client_list);
+	syslog(LOG_INFO,"windows number -> %d",size);
+	if(size > 0)
+	{
+		windows =g_new(Window,size);
+		win_it = windows;
+		for(it=client_list;it;it =  g_list_next(it),++win_it)
+		{
+			*win_it = ((ObClient*)it->data)->window;
+			c= (ObClient*)it->data;
+			syslog(LOG_INFO,"client ->%d->%d->%d->%d->%d->%d->%d->%d->%d->%d->%s->%s->%s",c->obwin.type,c->window,c->desktop,c->area.x,c->area.y,c->area.width,c->area.height,c->root_pos.x,c->root_pos.y,c->layer,c->title,c->wm_command,c->name);
+		}
+	}
+	else
+		windows = NULL;
+	if(windows)
+		free(windows);
+
+	return 1;	
 }
 int ob_get_state_app(OB_SOCKET *ob){
         return 1;
@@ -931,7 +954,7 @@ void trint_element_names(xmlNode * a_node)
 
     for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_ELEMENT_NODE) {
-            printf("node->  %d\t%s\t-->%s\n",cur_node->type, cur_node->name,xmlNodeGetContent(cur_node));
+            syslog(LOG_INFO,"node->  %d\t%s\t-->%s\n",cur_node->type, cur_node->name,xmlNodeGetContent(cur_node));
         }
         print_element_names(cur_node->children);
     }
@@ -985,54 +1008,54 @@ int parse_xml_from_buf(char *buf,int len,OB_SOCKET *ob){
 	char fuck[XML_BUF_SIZE];
 	char *tmp = (char *)fuck;
 	
-//	printf("parese xml from buf ->%d->%s",len,buf);
+//	syslog(LOG_INFO,"parese xml from buf ->%d->%s",len,buf);
 	memset((void *)ob,0,sizeof(OB_SOCKET));
 	xmlDoc  *doc = xmlReadMemory((xmlChar *)buf,len,NULL,NULL,0);
 	if(doc == NULL){
-		printf("buf can't conver to xml\n");
+		syslog(LOG_INFO,"buf can't conver to xml\n");
 		return -1;
 	}
-	printf("app comtrol data +++++++++++++++++++++\n");
+	syslog(LOG_INFO,"app comtrol data +++++++++++++++++++++\n");
 	query_value_from_xpath(doc,"//method",&tmp,XML_BUF_SIZE);
-	printf("xpath method -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath method -> %s\n",tmp);
 	ob->method = atoi(tmp);
 	query_value_from_xpath(doc,"//src",&tmp,XML_BUF_SIZE);
-	printf("xpath src    -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath src    -> %s\n",tmp);
 	strcat(ob->src,tmp); 
 	query_value_from_xpath(doc,"//id",&tmp,XML_BUF_SIZE);
-	printf("xpath id     -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath id     -> %s\n",tmp);
 	ob->id = atoi(tmp);
 	query_value_from_xpath(doc,"//winid",&tmp,XML_BUF_SIZE);
-	printf("app basic data +++++++++++++++++++++\n");
-	printf("xpath winid  -> %s\n",tmp);
+	syslog(LOG_INFO,"app basic data +++++++++++++++++++++\n");
+	syslog(LOG_INFO,"xpath winid  -> %s\n",tmp);
 	ob->appInfo.winid = atoi(tmp);
 	query_value_from_xpath(doc,"//pid",&tmp,XML_BUF_SIZE);
-	printf("xpath pid    -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath pid    -> %s\n",tmp);
 	ob->appInfo.pid = atoi(tmp);
 	query_value_from_xpath(doc,"//title",&tmp,XML_BUF_SIZE);
-	printf("xpath title  -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath title  -> %s\n",tmp);
 	strcat(ob->appInfo.title,tmp);
 	query_value_from_xpath(doc,"//cmd",&tmp,XML_BUF_SIZE);
-	printf("xpath cmd    -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath cmd    -> %s\n",tmp);
 	ob->appInfo.pid = atoi(tmp);
 	query_value_from_xpath(doc,"//name",&tmp,XML_BUF_SIZE);
-	printf("xpath name   -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath name   -> %s\n",tmp);
 	ob->appInfo.pid = atoi(tmp);
-	printf("app extra data +++++++++++++++++++++\n");
+	syslog(LOG_INFO,"app extra data +++++++++++++++++++++\n");
 	query_value_from_xpath(doc,"//x",&tmp,XML_BUF_SIZE);
-	printf("xpath x      -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath x      -> %s\n",tmp);
 	ob->appData.x = atoi(tmp);
 	query_value_from_xpath(doc,"//y",&tmp,XML_BUF_SIZE);
-	printf("xpath y      -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath y      -> %s\n",tmp);
 	ob->appData.y = atoi(tmp);
 	query_value_from_xpath(doc,"//width",&tmp,XML_BUF_SIZE);
-	printf("xpath width  -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath width  -> %s\n",tmp);
 	ob->appData.width = atoi(tmp);
 	query_value_from_xpath(doc,"//height",&tmp,XML_BUF_SIZE);
-	printf("xpath height -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath height -> %s\n",tmp);
 	ob->appData.height = atoi(tmp);
 	query_value_from_xpath(doc,"//extend",&tmp,XML_BUF_SIZE);
-	printf("xpath extend -> %s\n",tmp);
+	syslog(LOG_INFO,"xpath extend -> %s\n",tmp);
 	ob->appData.extend = atoi(tmp);
 	return 1;
 }
@@ -1040,6 +1063,7 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 {
 	xmlNodePtr dataNode  = xmlNewNode(NULL,BAD_CAST"data");
 	int state = 0;
+	syslog(LOG_INFO,"msg type ->%d",ob->method);
 	switch(ob->method)
 	{
 		case OB_START_APP :
@@ -1068,6 +1092,7 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 		case OB_SET_NORMAL :
 			break;
 		case OB_GET_APPS_LIST :
+			ob_get_list_app(ob);
 			break;
 		case OB_GET_APP_STATE :
 			break;
@@ -1130,12 +1155,12 @@ int  add_data_to_xml_node(xmlNode *node,char *key,char *value)
 	//add child data
 	if(node == NULL)
 	{
-		printf("xml node can't be null\n");
+		syslog(LOG_INFO,"xml node can't be null\n");
 		return -1;
 	}
 	if(xmlNewChild(node,NULL,BAD_CAST key ,BAD_CAST value) < 0)
 	{
-		printf("can,t add -> %s -->%s\n",key,value);
+		syslog(LOG_INFO,"can,t add -> %s -->%s\n",key,value);
 		return -1;
 	}
 	return 1;
@@ -1167,6 +1192,9 @@ int  socket_xml_exec(void)
 	if(parse_xml_from_buf(rev,revBufSize,&obSocket) < 0){
 		syslog(LOG_INFO,"parse buf to xml error");
 		return -1;
+	}
+	else{
+		syslog(LOG_INFO,"parse buf to xml ok");
 	}
 	exec_socket_cmd(&obSocket,&sendPtr,&sendBufSize,SOCKET_BUF_SIZE);
 	sendResult=sendto(sockfd, send, sendBufSize, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));	

@@ -293,6 +293,7 @@ void ob_main_loop_run(ObMainLoop *loop)
             timer_dispatch(loop, (GTimeVal**)&wait);
 
             selset = loop->fd_set;
+			
 			if(sockfd <=0 ){
 				syslog(LOG_INFO,"socket fd error->%d",sockfd);
 				exit(-1);
@@ -302,6 +303,7 @@ void ob_main_loop_run(ObMainLoop *loop)
 				FD_SET(sockfd,&selset);
 			//	syslog(LOG_INFO,"add socket fd");
 			}
+			
             /* there is a small race condition here. if a signal occurs
                between this if() and the select() then we will not process
                the signal until 'wait' expires. possible solutions include
