@@ -898,23 +898,41 @@ int ob_set_min_app(OB_SOCKET *ob){
 int ob_set_layer_app(OB_SOCKET *ob){
         return 1;
 }
-int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr dataNode)
+int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
 	syslog(LOG_INFO,"get app list");
 	Window *windows,*win_it;
 	ObClient *c;
 	GList *it;
+	xmlNodePtr app = NULL;
+	char tmp[XML_BUF_SIZE];
+	char *p = tmp;
+	int counter = 1;
 	guint size = g_list_length(client_list);
-	syslog(LOG_INFO,"windows number -> %d",size);
+	//demo test
 	if(size > 0)
 	{
 		windows =g_new(Window,size);
 		win_it = windows;
+		
 		for(it=client_list;it;it =  g_list_next(it),++win_it)
 		{
 			*win_it = ((ObClient*)it->data)->window;
 			c= (ObClient*)it->data;
 			syslog(LOG_INFO,"client ->%d->%d->%d->%d->%d->%d->%d->%d->%d->%d->%s->%s->%s",c->obwin.type,c->window,c->desktop,c->area.x,c->area.y,c->area.width,c->area.height,c->root_pos.x,c->root_pos.y,c->layer,c->title,c->wm_command,c->name);
+			memset(p,0,XML_BUF_SIZE);
+			sprintf(tmp,"app-%d",counter++);
+			app  = xmlNewChild(*headNode,NULL,BAD_CAST(tmp),NULL);
+			memset(p,0,XML_BUF_SIZE);
+			sprintf(tmp,"%d",c->pid);
+			xmlNewChild(app,NULL,BAD_CAST "pid",BAD_CAST(tmp));
+			xmlNewChild(app,NULL,BAD_CAST "name",BAD_CAST(c->name));
+			memset(p,0,XML_BUF_SIZE);
+			sprintf(tmp,"%d",c->window);
+			xmlNewChild(app,NULL,BAD_CAST "winid",BAD_CAST(tmp));
+			xmlNewChild(app,NULL,BAD_CAST "title",BAD_CAST(c->title));
+			xmlNewChild(app,NULL,BAD_CAST "cmd",BAD_CAST(c->wm_command));
+		
 		}
 	}
 	else
@@ -1093,7 +1111,7 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 		case OB_SET_NORMAL :
 			break;
 		case OB_GET_APPS_LIST :
-			ob_get_list_app(ob,dataNode);
+			ob_get_list_app(ob,&dataNode);
 			break;
 		case OB_GET_APP_STATE :
 			break;
@@ -1204,8 +1222,8 @@ int  socket_xml_exec(void)
 		syslog(LOG_INFO,"parse buf to xml ok");
 	}
 	exec_socket_cmd(&obSocket,&sendPtr,&sendBufSize,SOCKET_BUF_SIZE);
-	syslog(LOG_INFO,"ack buf size ->%d->%s",sendBufSize,sendPtr);
-	sendResult=sendto(sockfd, send, sendBufSize, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));	
+	sendResult=sendto(sockfd, sendPtr, sendBufSize, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));	
+	syslog(LOG_INFO,"ack buf size ->%d->%d->%s",sendResult,sendBufSize,sendPtr);
 	if(revBufSize < 0)
         {
 		syslog(LOG_INFO,"send ack data error!\n");
