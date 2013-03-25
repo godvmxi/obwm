@@ -12,7 +12,7 @@ make_and_install()
 	make install
 }
 
-if [ $1 = "all" ]; then
+if [ $1 = "all" ] ; then
 	all
 else
 	make_and_install

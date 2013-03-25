@@ -898,7 +898,7 @@ int ob_set_min_app(OB_SOCKET *ob){
 int ob_set_layer_app(OB_SOCKET *ob){
         return 1;
 }
-int ob_get_list_app(OB_SOCKET *ob)
+int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr dataNode)
 {
 	syslog(LOG_INFO,"get app list");
 	Window *windows,*win_it;
@@ -1063,6 +1063,7 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 {
 	xmlNodePtr dataNode  = xmlNewNode(NULL,BAD_CAST"data");
 	int state = 0;
+	int len = 0;
 	syslog(LOG_INFO,"msg type ->%d",ob->method);
 	switch(ob->method)
 	{
@@ -1092,15 +1093,17 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 		case OB_SET_NORMAL :
 			break;
 		case OB_GET_APPS_LIST :
-			ob_get_list_app(ob);
+			ob_get_list_app(ob,dataNode);
 			break;
 		case OB_GET_APP_STATE :
 			break;
 		case OB_EXIT :
+			ob_exit(0);
 			break;
 		case OB_RESTART :
 			break;
 		case OB_REFRESH :
+			ob_reconfigure();
 			break;
 		case OB_RESIZE :
 			break;
@@ -1111,20 +1114,24 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 		default :
 			break;
 	}
+	syslog(LOG_INFO,"xml exec deal ok");
 	char tmp[20];
 	xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
-       	xmlNodePtr root_node = xmlNewNode(NULL, BAD_CAST "root");
-       	xmlDocSetRootElement(doc, root_node); 
+   	xmlNodePtr root_node = xmlNewNode(NULL, BAD_CAST "root");
+   	xmlDocSetRootElement(doc, root_node); 
 	memset(tmp,0,20);
 	sprintf(tmp,"%d",ob->id);
 	xmlNewChild(root_node, NULL, BAD_CAST "id",BAD_CAST tmp); 
 	memset(tmp,0,20);
 	sprintf(tmp,"%d",ob->id);
 	xmlNewChild(root_node, NULL, BAD_CAST "state",BAD_CAST tmp); 
-	xmlAddChild(root_node,dataNode); 
+	if(dataNode != NULL)
+		xmlAddChild(root_node,dataNode); 
+	syslog(LOG_INFO,"xml exec deal ok");
 	
-	xmlDocDumpFormatMemory(doc,(xmlChar **)ack,ack_len,1);
-	
+	xmlDocDumpFormatMemory(doc,(xmlChar **)ack,&len,1);
+	*ack_len = len;
+	syslog(LOG_INFO,"xml result ->%d--> %s",*ack_len,*ack);	
 }
 int  start_socket_server(int port)
 {
@@ -1197,6 +1204,7 @@ int  socket_xml_exec(void)
 		syslog(LOG_INFO,"parse buf to xml ok");
 	}
 	exec_socket_cmd(&obSocket,&sendPtr,&sendBufSize,SOCKET_BUF_SIZE);
+	syslog(LOG_INFO,"ack buf size ->%d->%s",sendBufSize,sendPtr);
 	sendResult=sendto(sockfd, send, sendBufSize, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));	
 	if(revBufSize < 0)
         {
