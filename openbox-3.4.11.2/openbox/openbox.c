@@ -866,7 +866,22 @@ int main_init(int argc, char **argv)
 }
 void *get_client_from_app_info(OB_SOCKET *ob)
 {
-        return NULL;
+	ObClient *obc = NULL;
+	GList *it = NULL;
+	guint size = g_list_length(client_list);
+	if(size <= 0)
+		return NULL;
+	for(it=client_list;it;it =  g_list_next(it))
+	{
+		obc = (ObClient*)it->data;
+		syslog(LOG_INFO,"query client ->%d",obc->window);
+		if(ob->appInfo.winid == obc->window || ob->appInfo.pid == obc->pid){
+			syslog(LOG_INFO,"find client -> %d",obc->window);
+			return (ObClient*)it->data;
+
+		}
+	}
+	return NULL;
 }
 int ob_start_app(OB_SOCKET *ob){
 	pid_t pid = fork();
@@ -881,22 +896,71 @@ int ob_start_app(OB_SOCKET *ob){
 	    return 1;
 }
 int ob_kill_app(OB_SOCKET *ob){
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		char cmd[40];
+		sprintf(cmd,"kill %d",ob->appInfo.pid);	
+		system(cmd);
         return 1;
+	}
+	else
+		return -1;
 }
 int ob_exit_app(OB_SOCKET *ob){
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		char cmd[40];//let process exit auto
+		sprintf(cmd,"kill -3 %d",ob->appInfo.pid);	
+		system(cmd);
         return 1;
+	}
+	else
+		return -1;
 }
 int ob_set_full_app(OB_SOCKET *ob){
-        return 1;
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_fullscreen(it,TRUE);    
+		return 1;
+	}
+	else
+	{
+		return -1;
+	}
 }
 int ob_set_max_app(OB_SOCKET *ob){
-        return 1;
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_maximize(it,TRUE,0);    
+		return 1;
+	}
+	else
+		return -1;
 }
 int ob_set_min_app(OB_SOCKET *ob){
-        return 1;
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_hide(it);    
+
+		return 1;
+	}
+	else
+		return -1;
 }
-int ob_set_layer_app(OB_SOCKET *ob){
-        return 1;
+int ob_set_layer_app(OB_SOCKET *ob,int layer){
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_set_layer(it,layer);
+		return 1;
+	}
+	else
+		return -1;
 }
 int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
@@ -942,8 +1006,26 @@ int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 
 	return 1;	
 }
-int ob_get_state_app(OB_SOCKET *ob){
-        return 1;
+int ob_get_app_state(OB_SOCKET *ob,xmlNodePtr *headNode){
+    ObClient *it = get_client_from_app_info(ob);
+	char tmp[XML_BUF_SIZE];
+	char *p = tmp;
+	if(it != NULL)
+	{
+		xmlNodePtr app  = xmlNewChild(*headNode,NULL,BAD_CAST "app",NULL);
+		memset(p,0,XML_BUF_SIZE);
+        sprintf(tmp,"%d",it->pid);
+        xmlNewChild(app,NULL,BAD_CAST "pid",BAD_CAST(tmp));
+        xmlNewChild(app,NULL,BAD_CAST "name",BAD_CAST(it->name));
+        memset(p,0,XML_BUF_SIZE);
+        sprintf(tmp,"%d",it->window);
+        xmlNewChild(app,NULL,BAD_CAST "winid",BAD_CAST(tmp));
+        xmlNewChild(app,NULL,BAD_CAST "title",BAD_CAST(it->title));           
+		xmlNewChild(app,NULL,BAD_CAST "cmd",BAD_CAST(it->wm_command));
+		return 1;
+	}
+	else
+		return -1;
 }
 int ob_socket_exit(OB_SOCKET *ob){
         return 1;
@@ -955,13 +1037,34 @@ int ob_socket_refresh(OB_SOCKET *ob){
         return 1;
 }
 int ob_resize(OB_SOCKET *ob){
-        return 1;
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_fullscreen(it,TRUE);    
+		return 1;
+	}
+	else
+		return -1;
 }
 int ob_move(OB_SOCKET *ob){
-        return 1;
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_fullscreen(it,TRUE);    
+		return 1;
+	}
+	else
+		return -1;
 }
 int ob_resize_move(OB_SOCKET *ob){
-        return 1;
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_fullscreen(it,TRUE);    
+		return 1;
+	}
+	else
+		return -1;
 }
 void trint_element_names(xmlNode * a_node)
 {
@@ -1087,38 +1190,45 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 	{
 		case OB_START_APP :
 			//start app
+			state = ob_start_app(ob);
 			break;
 		case OB_KILL_APP :
 			//kill app
+			state = ob_kill_app(ob);
 			break;
 		case OB_EXIT_APP :
 			//exit
+			state = ob_exit_app(ob);
 			break;
 		case OB_SET_FULLSCREEN :
-			//
+			state = ob_set_full_app(ob);
 			break;
 		case OB_SET_MAX :
-			//
+			state = ob_set_max_app(ob);
 			break;
 		case OB_SET_MIN :
-			//
+			state = ob_set_min_app(ob);
 			break;
 		case OB_SET_BOTTOM :
-			//
+			state = ob_set_layer_app(ob,-1);
 			break;
 		case OB_SET_TOP :
+			state = ob_set_layer_app(ob,1);
 			break;
 		case OB_SET_NORMAL :
+			state = ob_set_layer_app(ob,0);
 			break;
 		case OB_GET_APPS_LIST :
-			ob_get_list_app(ob,&dataNode);
+			state = ob_get_list_app(ob,&dataNode);
 			break;
 		case OB_GET_APP_STATE :
+			state = ob_get_app_state(ob,&dataNode);
 			break;
 		case OB_EXIT :
 			ob_exit(0);
 			break;
 		case OB_RESTART :
+			ob_restart();
 			break;
 		case OB_REFRESH :
 			ob_reconfigure();
