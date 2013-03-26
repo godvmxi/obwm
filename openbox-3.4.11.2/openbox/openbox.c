@@ -1250,48 +1250,51 @@ int parse_xml_from_buf(char *buf,int len,OB_SOCKET *ob){
 		syslog(LOG_INFO,"buf can't conver to xml\n");
 		return -1;
 	}
-	syslog(LOG_INFO,"app comtrol data +++++++++++++++++++++\n");
+	//syslog(LOG_INFO,"app comtrol data +++++++++++++++++++++\n");
 	query_value_from_xpath(doc,"//method",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath method -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath method -> %s\n",tmp);
 	ob->method = atoi(tmp);
 	query_value_from_xpath(doc,"//src",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath src    -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath src    -> %s\n",tmp);
 	strcat(ob->src,tmp); 
 	query_value_from_xpath(doc,"//id",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath id     -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath id     -> %s\n",tmp);
 	ob->id = atoi(tmp);
 	query_value_from_xpath(doc,"//winid",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"app basic data +++++++++++++++++++++\n");
-	syslog(LOG_INFO,"xpath winid  -> %s\n",tmp);
+	//syslog(LOG_INFO,"app basic data +++++++++++++++++++++\n");
+	//syslog(LOG_INFO,"xpath winid  -> %s\n",tmp);
 	ob->appInfo.winid = atoi(tmp);
 	query_value_from_xpath(doc,"//pid",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath pid    -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath pid    -> %s\n",tmp);
 	ob->appInfo.pid = atoi(tmp);
 	query_value_from_xpath(doc,"//title",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath title  -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath title  -> %s\n",tmp);
 	strcat(ob->appInfo.title,tmp);
 	query_value_from_xpath(doc,"//cmd",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath cmd    -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath cmd    -> %s\n",tmp);
 	ob->appInfo.pid = atoi(tmp);
 	query_value_from_xpath(doc,"//name",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath name   -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath name   -> %s\n",tmp);
 	ob->appInfo.pid = atoi(tmp);
-	syslog(LOG_INFO,"app extra data +++++++++++++++++++++\n");
+	//syslog(LOG_INFO,"app extra data +++++++++++++++++++++\n");
 	query_value_from_xpath(doc,"//x",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath x      -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath x      -> %s\n",tmp);
 	ob->appData.x = atoi(tmp);
 	query_value_from_xpath(doc,"//y",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath y      -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath y      -> %s\n",tmp);
 	ob->appData.y = atoi(tmp);
 	query_value_from_xpath(doc,"//width",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath width  -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath width  -> %s\n",tmp);
 	ob->appData.width = atoi(tmp);
 	query_value_from_xpath(doc,"//height",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath height -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath height -> %s\n",tmp);
 	ob->appData.height = atoi(tmp);
 	query_value_from_xpath(doc,"//extend",&tmp,XML_BUF_SIZE);
-	syslog(LOG_INFO,"xpath extend -> %s\n",tmp);
+	//syslog(LOG_INFO,"xpath extend -> %s\n",tmp);
 	ob->appData.extend = atoi(tmp);
+	//free docmemery
+	xmlFreeDoc(doc); 
+	xmlCleanupParser();
 	return 1;
 }
 int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
@@ -1382,7 +1385,10 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 	
 	xmlDocDumpFormatMemory(doc,(xmlChar **)ack,&len,1);
 	*ack_len = len;
-	syslog(LOG_INFO,"xml result ->%d--> %s",*ack_len,*ack);	
+	xmlFreeDoc(doc); 
+	xmlCleanupParser();
+
+	//syslog(LOG_INFO,"xml result ->%d--> %s",*ack_len,*ack);	
 }
 int  start_socket_server(int port)
 {
@@ -1456,7 +1462,7 @@ int  socket_xml_exec(void)
 	}
 	exec_socket_cmd(&obSocket,&sendPtr,&sendBufSize,SOCKET_BUF_SIZE);
 	sendResult=sendto(sockfd, sendPtr, sendBufSize, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));	
-	syslog(LOG_INFO,"ack buf size ->%d->%d->%s",sendResult,sendBufSize,sendPtr);
+	//syslog(LOG_INFO,"ack buf size ->%d->%d->%s",sendResult,sendBufSize,sendPtr);
 	if(revBufSize < 0)
         {
 		syslog(LOG_INFO,"send ack data error!\n");
