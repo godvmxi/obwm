@@ -883,7 +883,7 @@ void *get_client_from_app_info(OB_SOCKET *ob)
 	}
 	return NULL;
 }
-int ob_start_app(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_start_app(OB_SOCKET *ob){
 	syslog(LOG_INFO,"ob start app");
 	pid_t pid = fork();
 	if(pid < 0)
@@ -896,7 +896,7 @@ int ob_start_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	else
 	    return 1;
 }
-int ob_kill_app(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_kill_app(OB_SOCKET *ob){
 	syslog(LOG_INFO,"ob kill app");
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
@@ -909,7 +909,7 @@ int ob_kill_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	else
 		return -1;
 }
-int ob_exit_app(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_exit_app(OB_SOCKET *ob){
 	syslog(LOG_INFO,"ob exit app");
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
@@ -922,14 +922,12 @@ int ob_exit_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	else
 		return -1;
 }
-int ob_set_full_app(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_set_full_app(OB_SOCKET *ob){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob full app");
 	if(it != NULL)
 	{
-		syslog(LOG_INFO,"client state -> %d",it->fullscreen);
-		client_fullscreen(it,!it->fullscreen);    
-		client_focus(it);
+		client_fullscreen(it,FALSE);    
 		return 1;
 	}
 	else
@@ -937,7 +935,7 @@ int ob_set_full_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 		return -1;
 	}
 }
-int ob_set_max_app(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_set_max_app(OB_SOCKET *ob){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob max app");
 	if(it != NULL)
@@ -948,7 +946,7 @@ int ob_set_max_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	else
 		return -1;
 }
-int ob_set_min_app(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_set_min_app(OB_SOCKET *ob){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob min app");
 	if(it != NULL)
@@ -960,53 +958,13 @@ int ob_set_min_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	else
 		return -1;
 }
-int ob_set_layer_app(OB_SOCKET *ob,int layer,xmlNodePtr *headNode){
+int ob_set_layer_app(OB_SOCKET *ob,int layer){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob layer app->%d",layer);
 
 	if(it != NULL)
 	{
 		client_set_layer(it,layer);
-		return 1;
-	}
-	else
-		return -1;
-}
-int ob_send_to_extend(OB_SOCKET *ob,xmlNodePtr *headNode)
-{
-	syslog(LOG_INFO,"method send to extend");
-    ObClient *it = get_client_from_app_info(ob);
-	if(it != NULL)
-	{
-		//client_set_layer(it,layer);
-		client_move(it,1300,10);
-		client_fullscreen(it,TRUE);
-		return 1;
-	}
-	else
-		return -1;
-}
-int ob_send_to_main(OB_SOCKET *ob,xmlNodePtr *headNode)
-{
-	syslog(LOG_INFO,"method send to main");
-    ObClient *it = get_client_from_app_info(ob);
-	if(it != NULL)
-	{
-		client_move(it,10,10);
-		client_fullscreen(it,TRUE);
-		return 1;
-	}
-	else
-		return -1;
-}
-int ob_show_desktop(OB_SOCKET *ob,xmlNodePtr *headNode)
-{
-	syslog(LOG_INFO,"method send to main");
-    ObClient *it = get_client_from_app_info(ob);
-	if(it != NULL)
-	{
-	//	client_move(it,10,10);
-	//	client_fullscreen(it,TRUE);
 		return 1;
 	}
 	else
@@ -1097,88 +1055,55 @@ int ob_get_app_state(OB_SOCKET *ob,xmlNodePtr *headNode){
         xmlNewChild(app,NULL,BAD_CAST "winid",BAD_CAST(tmp));
         xmlNewChild(app,NULL,BAD_CAST "title",BAD_CAST(it->title));           
 		xmlNewChild(app,NULL,BAD_CAST "cmd",BAD_CAST(it->wm_command));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->desktop);
-			xmlNewChild(app,NULL,BAD_CAST "desktop",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->area.x);
-			xmlNewChild(app,NULL,BAD_CAST "x",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->area.y);
-			xmlNewChild(app,NULL,BAD_CAST "y",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->area.width);
-			xmlNewChild(app,NULL,BAD_CAST "width",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->area.height);
-			xmlNewChild(app,NULL,BAD_CAST "height",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->above);
-			xmlNewChild(app,NULL,BAD_CAST "above",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->below);
-			xmlNewChild(app,NULL,BAD_CAST "below",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->type);
-			xmlNewChild(app,NULL,BAD_CAST "type",BAD_CAST(tmp));
 		return 1;
 	}
 	else
 		return -1;
 }
-int ob_socket_exit(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_socket_exit(OB_SOCKET *ob){
 	syslog(LOG_INFO,"ob exit");
-	ob_exit(0);
-	return 1;
+        return 1;
 }
-int ob_socket_restart(OB_SOCKET *ob,xmlNodePtr *headNode){
-	
+int ob_socket_restart(OB_SOCKET *ob){
 	syslog(LOG_INFO,"ob restart");
-	ob_restart();
-    return 1;
+        return 1;
 }
-int ob_socket_refresh(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_socket_refresh(OB_SOCKET *ob){
 	syslog(LOG_INFO,"ob refresh");
         return 1;
 }
-int ob_resize(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_resize(OB_SOCKET *ob){
 	syslog(LOG_INFO,"ob resize app");
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
 	{
-		client_resize(it,ob->appData.width,ob->appData.height);    
+		client_fullscreen(it,TRUE);    
 		return 1;
 	}
 	else
 		return -1;
 }
-int ob_move(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_move(OB_SOCKET *ob){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob move app");
 	if(it != NULL)
 	{
-		client_move(it,ob->appData.x,ob->appData.y);    
+		client_fullscreen(it,TRUE);    
 		return 1;
 	}
 	else
 		return -1;
 }
-int ob_resize_move(OB_SOCKET *ob,xmlNodePtr *headNode){
+int ob_resize_move(OB_SOCKET *ob){
 	syslog(LOG_INFO,"ob resize and move app");
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
 	{
 		client_move_resize(it,ob->appData.x,ob->appData.y,ob->appData.width,ob->appData.height);    
-		client_calc_layer(it);
-		//client_focus(it);
 		return 1;
 	}
 	else
 		return -1;
-}
-int ob_get_system(OB_SOCKET *ob,xmlNodePtr *headNode)
-{
-	return 1;
 }
 void trint_element_names(xmlNode * a_node)
 {
@@ -1304,33 +1229,33 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 	{
 		case OB_START_APP :
 			//start app
-			state = ob_start_app(ob,&dataNode);
+			state = ob_start_app(ob);
 			break;
 		case OB_KILL_APP :
 			//kill app
-			state = ob_kill_app(ob,&dataNode);
+			state = ob_kill_app(ob);
 			break;
 		case OB_EXIT_APP :
 			//exit
-			state = ob_exit_app(ob,&dataNode);
+			state = ob_exit_app(ob);
 			break;
 		case OB_SET_FULLSCREEN :
-			state = ob_set_full_app(ob,&dataNode);
+			state = ob_set_full_app(ob);
 			break;
 		case OB_SET_MAX :
-			state = ob_set_max_app(ob,&dataNode);
+			state = ob_set_max_app(ob);
 			break;
 		case OB_SET_MIN :
-			state = ob_set_min_app(ob,&dataNode);
+			state = ob_set_min_app(ob);
 			break;
 		case OB_SET_BOTTOM :
-			state = ob_set_layer_app(ob,-1,&dataNode);
+			state = ob_set_layer_app(ob,-1);
 			break;
 		case OB_SET_TOP :
-			state = ob_set_layer_app(ob,1,&dataNode);
+			state = ob_set_layer_app(ob,1);
 			break;
 		case OB_SET_NORMAL :
-			state = ob_set_layer_app(ob,0,&dataNode);
+			state = ob_set_layer_app(ob,0);
 			break;
 		case OB_GET_APPS_LIST :
 			state = ob_get_list_app(ob,&dataNode);
@@ -1348,19 +1273,14 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 			ob_reconfigure();
 			break;
 		case OB_RESIZE :
-			ob_resize(ob,&dataNode);	
 			break;
-		case OB_SEND_TO_EXTEND :
-			ob_send_to_extend(ob,&dataNode);
+		case OB_MOVE :
 			break;
-		case OB_SEND_TO_MAIN :
-			ob_send_to_main(ob,&dataNode);
-			break;
-		case OB_GET_SYSTEM :
-			ob_get_system(ob,&dataNode);
+		case OB_RESIZE_MOVE :
+			ob_resize_move(ob);
 			break;
 		default :
-			syslog(LOG_INFO,"no defined method");
+			syslog(LOG_INFO"no defined method");
 			break;
 	}
 	//syslog(LOG_INFO,"xml exec deal ok");

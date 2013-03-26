@@ -84,8 +84,6 @@ gboolean ob_keycode_match(KeyCode code, ObKey key);
  * History: 
  * *****************************************************************************/
 
-#ifndef LIBXML2_PARSE
-#define LIBXML2_PARSE
 #include <syslog.h>
 #include <stdio.h>
 #include <libxml/parser.h> 
@@ -109,23 +107,27 @@ gboolean ob_keycode_match(KeyCode code, ObKey key);
 /*function define*/
 
 typedef enum {
-	OB_START_APP,
-	OB_KILL_APP,
-	OB_EXIT_APP,
-	OB_SET_FULLSCREEN,
-	OB_SET_MAX,
-	OB_SET_MIN,
-	OB_SET_BOTTOM,
-	OB_SET_TOP,
-	OB_SET_NORMAL,
-	OB_GET_APPS_LIST,
-	OB_GET_APP_STATE,
-	OB_EXIT,
-	OB_RESTART,
-	OB_REFRESH,
-	OB_RESIZE,
-	OB_MOVE,
-	OB_RESIZE_MOVE
+	OB_START_APP,			//0
+	OB_KILL_APP,			//1
+	OB_EXIT_APP,			//2
+	OB_SET_FULLSCREEN,		//3
+	OB_SET_MAX,				//4
+	OB_SET_MIN,				//5
+	OB_SET_BOTTOM,			//6
+	OB_SET_TOP,				//7
+	OB_SET_NORMAL,			//8
+	OB_GET_APPS_LIST,		//9
+	OB_GET_APP_STATE,		//10
+	OB_EXIT,				//11
+	OB_RESTART,				//12
+	OB_REFRESH,				//13
+	OB_RESIZE,				//14
+	OB_MOVE,				//15
+	OB_RESIZE_MOVE,			//16
+	OB_SEND_TO_EXTEND,		//17
+	OB_SEND_TO_MAIN,		//18
+	OB_GET_SYSTEM,			//19
+	OB_SHOW_DESKTOP			//20
 }WM_METHOD;
 typedef struct{
 	int winid;
@@ -174,7 +176,6 @@ int socket_xml_exec(void);
 int  add_data_to_xml_node(xmlNode *node,char *key,char *value);
 int main_test(int argc, char **argv);
 void wait_on_socket(gboolean reconfigure);
-#endif
 
 
 

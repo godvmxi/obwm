@@ -42,3 +42,4 @@ DESKTOP_ENV="OPENBOX"
 if which @secretbindir@/xdg-autostart >/dev/null; then
   @secretbindir@/xdg-autostart $DESKTOP_ENV
 fi
+gnome-terminal &
