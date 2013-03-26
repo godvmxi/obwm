@@ -874,16 +874,17 @@ void *get_client_from_app_info(OB_SOCKET *ob)
 	for(it=client_list;it;it =  g_list_next(it))
 	{
 		obc = (ObClient*)it->data;
-		syslog(LOG_INFO,"query client ->%d",obc->window);
+		syslog(LOG_INFO,"query client ->%d->%d",ob->appInfo.winid,ob->appInfo.pid);
 		if(ob->appInfo.winid == obc->window || ob->appInfo.pid == obc->pid){
 			syslog(LOG_INFO,"find client -> %d",obc->window);
-			return (ObClient*)it->data;
+			return obc;
 
 		}
 	}
 	return NULL;
 }
 int ob_start_app(OB_SOCKET *ob){
+	syslog(LOG_INFO,"ob start app");
 	pid_t pid = fork();
 	if(pid < 0)
 		return -1;
@@ -896,6 +897,7 @@ int ob_start_app(OB_SOCKET *ob){
 	    return 1;
 }
 int ob_kill_app(OB_SOCKET *ob){
+	syslog(LOG_INFO,"ob kill app");
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
 	{
@@ -908,6 +910,7 @@ int ob_kill_app(OB_SOCKET *ob){
 		return -1;
 }
 int ob_exit_app(OB_SOCKET *ob){
+	syslog(LOG_INFO,"ob exit app");
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
 	{
@@ -921,9 +924,10 @@ int ob_exit_app(OB_SOCKET *ob){
 }
 int ob_set_full_app(OB_SOCKET *ob){
     ObClient *it = get_client_from_app_info(ob);
+	syslog(LOG_INFO,"ob full app");
 	if(it != NULL)
 	{
-		client_fullscreen(it,TRUE);    
+		client_fullscreen(it,FALSE);    
 		return 1;
 	}
 	else
@@ -933,6 +937,7 @@ int ob_set_full_app(OB_SOCKET *ob){
 }
 int ob_set_max_app(OB_SOCKET *ob){
     ObClient *it = get_client_from_app_info(ob);
+	syslog(LOG_INFO,"ob max app");
 	if(it != NULL)
 	{
 		client_maximize(it,TRUE,0);    
@@ -943,6 +948,7 @@ int ob_set_max_app(OB_SOCKET *ob){
 }
 int ob_set_min_app(OB_SOCKET *ob){
     ObClient *it = get_client_from_app_info(ob);
+	syslog(LOG_INFO,"ob min app");
 	if(it != NULL)
 	{
 		client_hide(it);    
@@ -954,6 +960,8 @@ int ob_set_min_app(OB_SOCKET *ob){
 }
 int ob_set_layer_app(OB_SOCKET *ob,int layer){
     ObClient *it = get_client_from_app_info(ob);
+	syslog(LOG_INFO,"ob layer app->%d",layer);
+
 	if(it != NULL)
 	{
 		client_set_layer(it,layer);
@@ -1008,6 +1016,7 @@ int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 }
 int ob_get_app_state(OB_SOCKET *ob,xmlNodePtr *headNode){
     ObClient *it = get_client_from_app_info(ob);
+	syslog(LOG_INFO,"ob  app state");
 	char tmp[XML_BUF_SIZE];
 	char *p = tmp;
 	if(it != NULL)
@@ -1028,15 +1037,19 @@ int ob_get_app_state(OB_SOCKET *ob,xmlNodePtr *headNode){
 		return -1;
 }
 int ob_socket_exit(OB_SOCKET *ob){
+	syslog(LOG_INFO,"ob exit");
         return 1;
 }
 int ob_socket_restart(OB_SOCKET *ob){
+	syslog(LOG_INFO,"ob restart");
         return 1;
 }
 int ob_socket_refresh(OB_SOCKET *ob){
+	syslog(LOG_INFO,"ob refresh");
         return 1;
 }
 int ob_resize(OB_SOCKET *ob){
+	syslog(LOG_INFO,"ob resize app");
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
 	{
@@ -1048,6 +1061,7 @@ int ob_resize(OB_SOCKET *ob){
 }
 int ob_move(OB_SOCKET *ob){
     ObClient *it = get_client_from_app_info(ob);
+	syslog(LOG_INFO,"ob move app");
 	if(it != NULL)
 	{
 		client_fullscreen(it,TRUE);    
@@ -1057,6 +1071,7 @@ int ob_move(OB_SOCKET *ob){
 		return -1;
 }
 int ob_resize_move(OB_SOCKET *ob){
+	syslog(LOG_INFO,"ob resize and move app");
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
 	{
@@ -1242,7 +1257,7 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 		default :
 			break;
 	}
-	syslog(LOG_INFO,"xml exec deal ok");
+	//syslog(LOG_INFO,"xml exec deal ok");
 	char tmp[20];
 	xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
    	xmlNodePtr root_node = xmlNewNode(NULL, BAD_CAST "root");
@@ -1251,11 +1266,13 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 	sprintf(tmp,"%d",ob->id);
 	xmlNewChild(root_node, NULL, BAD_CAST "id",BAD_CAST tmp); 
 	memset(tmp,0,20);
-	sprintf(tmp,"%d",ob->id);
+	if(ob->id >0)
+		strcpy(tmp,"OK");
+	else
+		strcpy(tmp,"ERROR");
 	xmlNewChild(root_node, NULL, BAD_CAST "state",BAD_CAST tmp); 
-	if(dataNode != NULL)
 		xmlAddChild(root_node,dataNode); 
-	syslog(LOG_INFO,"xml exec deal ok");
+	//syslog(LOG_INFO,"xml exec deal ok");
 	
 	xmlDocDumpFormatMemory(doc,(xmlChar **)ack,&len,1);
 	*ack_len = len;
