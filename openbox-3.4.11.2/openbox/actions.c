@@ -255,6 +255,7 @@ void actions_run_acts(GSList *acts,
 
     /* Don't allow saving the initial state when running things from the
        menu */
+	syslog(LOG_INFO,"gslist len -> %d",g_slist_length(acts));
     if (uact == OB_USER_ACTION_MENU_SELECTION)
         state = 0;
     /* If x and y are < 0 then use the current pointer position */
@@ -265,7 +266,7 @@ void actions_run_acts(GSList *acts,
         ObActionsData data;
         ObActionsAct *act = it->data;
         gboolean ok = TRUE;
-
+		syslog(LOG_INFO,"action ->%s",act->def->name);
         actions_setup_data(&data, uact, state, x, y, button, con, client);
 
         /* if they have the same run function, then we'll assume they are

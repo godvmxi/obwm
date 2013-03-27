@@ -45,5 +45,3 @@ fi
 gnome-terminal &
 winid &
 winid &
-winid &
-winid &

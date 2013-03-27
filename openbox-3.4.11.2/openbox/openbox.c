@@ -874,7 +874,7 @@ void *get_client_from_app_info(OB_SOCKET *ob)
 	for(it=client_list;it;it =  g_list_next(it))
 	{
 		obc = (ObClient*)it->data;
-		syslog(LOG_INFO,"query client ->%d->%d",ob->appInfo.winid,ob->appInfo.pid);
+		////syslog(LOG_INFO,"query client ->%d->%d",ob->appInfo.winid,ob->appInfo.pid);
 		if(ob->appInfo.winid == obc->window || ob->appInfo.pid == obc->pid){
 			syslog(LOG_INFO,"find client -> %d",obc->window);
 			return obc;
@@ -940,9 +940,16 @@ int ob_set_full_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 int ob_set_max_app(OB_SOCKET *ob,xmlNodePtr *headNode){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob max app");
+	static gboolean max = TRUE;
+	if(max)
+		max = FALSE;
+	else
+		max = TRUE;
+	
 	if(it != NULL)
 	{
-		client_maximize(it,TRUE,0);    
+		client_maximize(it,max,0);    
+		client_activate(it,TRUE,TRUE,TRUE,TRUE,TRUE);
 		return 1;
 	}
 	else
@@ -1033,7 +1040,7 @@ int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 		{
 			*win_it = ((ObClient*)it->data)->window;
 			c= (ObClient*)it->data;
-			syslog(LOG_INFO,"client ->%d->%d->%d->%d->%d->%d->%d->%d->%d->%d->%s->%s->%s",c->obwin.type,c->window,c->desktop,c->area.x,c->area.y,c->area.width,c->area.height,c->root_pos.x,c->root_pos.y,c->layer,c->title,c->wm_command,c->name);
+			//syslog(LOG_INFO,"client ->%d->%d->%d->%d->%d->%d->%d->%d->%d->%d->%s->%s->%s",c->obwin.type,c->window,c->desktop,c->area.x,c->area.y,c->area.width,c->area.height,c->root_pos.x,c->root_pos.y,c->layer,c->title,c->wm_command,c->name);
 			memset(p,0,XML_BUF_SIZE);
 			sprintf(tmp,"app-%d",counter++);
 			app  = xmlNewChild(*headNode,NULL,BAD_CAST(tmp),NULL);
@@ -1352,6 +1359,12 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 			break;
 		case OB_RESIZE :
 			ob_resize(ob,&dataNode);	
+			break;
+		case OB_MOVE :
+			ob_move(ob,&dataNode);
+			break;
+		case OB_RESIZE_MOVE :
+			ob_resize_move(ob,&dataNode);
 			break;
 		case OB_SEND_TO_EXTEND :
 			ob_send_to_extend(ob,&dataNode);
