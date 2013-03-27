@@ -97,7 +97,7 @@ gboolean ob_keycode_match(KeyCode code, ObKey key);
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-
+#include "client.h"
 /* macro define*/
 #define SOCKET_BUF_SIZE 1024
 #define XML_BUF_SIZE 40
@@ -110,24 +110,26 @@ typedef enum {
 	OB_START_APP,			//0
 	OB_KILL_APP,			//1
 	OB_EXIT_APP,			//2
-	OB_SET_FULLSCREEN,		//3
-	OB_SET_MAX,				//4
-	OB_SET_MIN,				//5
-	OB_SET_BOTTOM,			//6
-	OB_SET_TOP,				//7
-	OB_SET_NORMAL,			//8
+	OB_SET_FULLSCREEN_APP,	//3
+	OB_SET_MAX_APP,				//4
+	OB_SET_MIN_APP,				//5
+	OB_SET_BOTTOM_APP,			//6
+	OB_SET_TOP_APP,				//7
+	OB_SET_NORMAL_APP,			//8
 	OB_GET_APPS_LIST,		//9
 	OB_GET_APP_STATE,		//10
 	OB_EXIT,				//11
 	OB_RESTART,				//12
 	OB_REFRESH,				//13
-	OB_RESIZE,				//14
-	OB_MOVE,				//15
-	OB_RESIZE_MOVE,			//16
-	OB_SEND_TO_EXTEND,		//17
-	OB_SEND_TO_MAIN,		//18
+	OB_RESIZE_APP,			//14
+	OB_MOVE_APP,			//15
+	OB_RESIZE_MOVE_APP,		//16
+	OB_SEND_TO_EXTEND_APP,	//17
+	OB_SEND_TO_MAIN_APP,	//18
 	OB_GET_SYSTEM,			//19
-	OB_SHOW_DESKTOP			//20
+	OB_SHOW_DESKTOP,		//20
+	OB_RAISE_APP,			//21
+	OB_FOCUS_APP			//22
 }WM_METHOD;
 typedef struct{
 	int winid;
@@ -155,9 +157,22 @@ typedef struct {
 	socklen_t len; 
 }OB_SOCKET;
 
+typedef struct{
+	ObClient *top;
+	ObClient *bottom;
+	GList *normal;
+	GList *stack;
+	ObClient *full;
+	ObClient *max;
+}OB_SCREEN;
+typedef struct{
+	OB_SCREEN main;
+	OB_SCREEN extend;
+}OB_WM_DATA;
 
 
-/*************************************************
+
+/************************************************
  * Function: // 函数名称
  * Description: // 函数功能、性能等的描述
  * Calls: // 被本函数调用的函数清单

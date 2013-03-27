@@ -1006,6 +1006,31 @@ int ob_send_to_main(OB_SOCKET *ob,xmlNodePtr *headNode)
 	else
 		return -1;
 }
+int ob_raise(OB_SOCKET *ob,xmlNodePtr *headNode)
+{
+	syslog(LOG_INFO,"method raise");
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_move(it,10,10);
+		client_fullscreen(it,TRUE);
+		return 1;
+	}
+	else
+		return -1;
+}
+int ob_focus(OB_SOCKET *ob,xmlNodePtr *headNode)
+{
+	syslog(LOG_INFO,"method focus");
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+		client_activate(it,TRUE,TRUE,TRUE,TRUE,TRUE);
+		return 1;
+	}
+	else
+		return -1;
+}
 int ob_show_desktop(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
 	syslog(LOG_INFO,"method send to main");
@@ -1324,22 +1349,22 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 			//exit
 			state = ob_exit_app(ob,&dataNode);
 			break;
-		case OB_SET_FULLSCREEN :
+		case OB_SET_FULLSCREEN_APP:
 			state = ob_set_full_app(ob,&dataNode);
 			break;
-		case OB_SET_MAX :
+		case OB_SET_MAX_APP :
 			state = ob_set_max_app(ob,&dataNode);
 			break;
-		case OB_SET_MIN :
+		case OB_SET_MIN_APP :
 			state = ob_set_min_app(ob,&dataNode);
 			break;
-		case OB_SET_BOTTOM :
+		case OB_SET_BOTTOM_APP :
 			state = ob_set_layer_app(ob,-1,&dataNode);
 			break;
-		case OB_SET_TOP :
+		case OB_SET_TOP_APP :
 			state = ob_set_layer_app(ob,1,&dataNode);
 			break;
-		case OB_SET_NORMAL :
+		case OB_SET_NORMAL_APP :
 			state = ob_set_layer_app(ob,0,&dataNode);
 			break;
 		case OB_GET_APPS_LIST :
@@ -1357,23 +1382,32 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 		case OB_REFRESH :
 			ob_reconfigure();
 			break;
-		case OB_RESIZE :
+		case OB_RESIZE_APP :
 			ob_resize(ob,&dataNode);	
 			break;
-		case OB_MOVE :
+		case OB_MOVE_APP :
 			ob_move(ob,&dataNode);
 			break;
-		case OB_RESIZE_MOVE :
+		case OB_RESIZE_MOVE_APP :
 			ob_resize_move(ob,&dataNode);
 			break;
-		case OB_SEND_TO_EXTEND :
+		case OB_SEND_TO_EXTEND_APP :
 			ob_send_to_extend(ob,&dataNode);
 			break;
-		case OB_SEND_TO_MAIN :
+		case OB_SEND_TO_MAIN_APP :
 			ob_send_to_main(ob,&dataNode);
 			break;
 		case OB_GET_SYSTEM :
 			ob_get_system(ob,&dataNode);
+			break;
+		case OB_SHOW_DESKTOP :
+			ob_get_system(ob,&dataNode);
+			break;
+		case OB_RAISE_APP :
+			ob_raise(ob,&dataNode);
+			break;
+		case OB_FOCUS_APP :
+			ob_focus(ob,&dataNode);
 			break;
 		default :
 			syslog(LOG_INFO,"no defined method");
