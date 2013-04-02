@@ -909,6 +909,12 @@ xmlNodePtr create_xml_from_client(ObClient *c)
 	memset(p,0,XML_BUF_SIZE);
 	sprintf(tmp,"%d",c->max_vert);
 	xmlNewChild(app,NULL,BAD_CAST "vert",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->fullscreen);
+	xmlNewChild(app,NULL,BAD_CAST "full",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->undecorated);
+	xmlNewChild(app,NULL,BAD_CAST "undecorated",BAD_CAST(tmp));
 	return app;
 	
 }
@@ -978,11 +984,15 @@ int ob_set_full_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	{
 		syslog(LOG_INFO,"client state -> %d",it->fullscreen);
 		client_fullscreen(it,!it->fullscreen);    
-		client_focus(it);
+		//client_focus(it);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
 	else
 	{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
 		return -1;
 	}
 }
@@ -1017,12 +1027,17 @@ int ob_set_min_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	syslog(LOG_INFO,"ob min app");
 	if(it != NULL)
 	{
-		client_hide(it);    
+		//client_hide(it);    
 
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
-	else
+	else{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
 		return -1;
+	}
 }
 int ob_set_layer_app(OB_SOCKET *ob,int layer,xmlNodePtr *headNode){
     ObClient *it = get_client_from_app_info(ob);
@@ -1031,10 +1046,15 @@ int ob_set_layer_app(OB_SOCKET *ob,int layer,xmlNodePtr *headNode){
 	if(it != NULL)
 	{
 		client_set_layer(it,layer);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
-	else
+	else{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
 		return -1;
+	}
 }
 int ob_send_to_extend(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
@@ -1045,10 +1065,16 @@ int ob_send_to_extend(OB_SOCKET *ob,xmlNodePtr *headNode)
 		//client_set_layer(it,layer);
 		client_move(it,1300,10);
 		client_fullscreen(it,TRUE);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
 	else
+	{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
 		return -1;
+	}
 }
 int ob_send_to_main(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
@@ -1058,10 +1084,16 @@ int ob_send_to_main(OB_SOCKET *ob,xmlNodePtr *headNode)
 	{
 		client_move(it,10,10);
 		client_fullscreen(it,TRUE);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
 	else
+	{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
 		return -1;
+	}
 }
 int ob_raise(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
@@ -1071,11 +1103,16 @@ int ob_raise(OB_SOCKET *ob,xmlNodePtr *headNode)
 	{
 		//client_move(it,10,10);
 		client_activate(it,TRUE,TRUE,TRUE,TRUE,TRUE);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		//client_fullscreen(it,TRUE);
 		return 1;
 	}
-	else
+	else{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
 		return -1;
+	}
 }
 int ob_focus(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
@@ -1084,10 +1121,15 @@ int ob_focus(OB_SOCKET *ob,xmlNodePtr *headNode)
 	if(it != NULL)
 	{
 		client_activate(it,TRUE,TRUE,TRUE,TRUE,TRUE);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
-	else
+	else{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
 		return -1;
+	}
 }
 int ob_show_desktop(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
@@ -1097,10 +1139,32 @@ int ob_show_desktop(OB_SOCKET *ob,xmlNodePtr *headNode)
 	{
 	//	client_move(it,10,10);
 	//	client_fullscreen(it,TRUE);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
-	else
+	else{
 		return -1;
+	}
+}
+int ob_undecorate_app(OB_SOCKET *ob,xmlNodePtr *headNode)
+{
+	syslog(LOG_INFO,"method send to main");
+    ObClient *it = get_client_from_app_info(ob);
+	if(it != NULL)
+	{
+	//	client_move(it,10,10);
+	//	client_fullscreen(it,TRUE);
+		client_set_undecorated(it, !it->undecorated);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
+		return 1;
+	}
+	else{
+		return -1;
+	}
 }
 int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
@@ -1183,48 +1247,17 @@ int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 int ob_get_app_state(OB_SOCKET *ob,xmlNodePtr *headNode){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob  app state");
-	char tmp[XML_BUF_SIZE];
-	char *p = tmp;
 	if(it != NULL)
 	{
-		xmlNodePtr app  = xmlNewChild(*headNode,NULL,BAD_CAST "app",NULL);
-		memset(p,0,XML_BUF_SIZE);
-        sprintf(tmp,"%d",it->pid);
-        xmlNewChild(app,NULL,BAD_CAST "pid",BAD_CAST(tmp));
-        xmlNewChild(app,NULL,BAD_CAST "name",BAD_CAST(it->name));
-        memset(p,0,XML_BUF_SIZE);
-        sprintf(tmp,"%d",it->window);
-        xmlNewChild(app,NULL,BAD_CAST "winid",BAD_CAST(tmp));
-        xmlNewChild(app,NULL,BAD_CAST "title",BAD_CAST(it->title));           
-		xmlNewChild(app,NULL,BAD_CAST "cmd",BAD_CAST(it->wm_command));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->desktop);
-			xmlNewChild(app,NULL,BAD_CAST "desktop",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->area.x);
-			xmlNewChild(app,NULL,BAD_CAST "x",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->area.y);
-			xmlNewChild(app,NULL,BAD_CAST "y",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->area.width);
-			xmlNewChild(app,NULL,BAD_CAST "width",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->area.height);
-			xmlNewChild(app,NULL,BAD_CAST "height",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->above);
-			xmlNewChild(app,NULL,BAD_CAST "above",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->below);
-			xmlNewChild(app,NULL,BAD_CAST "below",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",it->type);
-			xmlNewChild(app,NULL,BAD_CAST "type",BAD_CAST(tmp));
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
-	else
+	else{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
 		return -1;
+	}
 }
 int ob_socket_exit(OB_SOCKET *ob,xmlNodePtr *headNode){
 	syslog(LOG_INFO,"ob exit");
@@ -1247,6 +1280,9 @@ int ob_resize(OB_SOCKET *ob,xmlNodePtr *headNode){
 	if(it != NULL)
 	{
 		client_resize(it,ob->appData.width,ob->appData.height);    
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
 	else
@@ -1258,6 +1294,9 @@ int ob_move(OB_SOCKET *ob,xmlNodePtr *headNode){
 	if(it != NULL)
 	{
 		client_move(it,ob->appData.x,ob->appData.y);    
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
 	else
@@ -1270,6 +1309,9 @@ int ob_resize_move(OB_SOCKET *ob,xmlNodePtr *headNode){
 	{
 		client_move_resize(it,ob->appData.x,ob->appData.y,ob->appData.width,ob->appData.height);    
 		client_calc_layer(it);
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		//client_focus(it);
 		return 1;
 	}
@@ -1469,13 +1511,16 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 			state = ob_get_system(ob,&dataNode);
 			break;
 		case OB_SHOW_DESKTOP :
-			state = ob_get_system(ob,&dataNode);
+			state = ob_show_desktop(ob,&dataNode);
 			break;
 		case OB_RAISE_APP :
 			state = ob_raise(ob,&dataNode);
 			break;
 		case OB_FOCUS_APP :
 			state = ob_focus(ob,&dataNode);
+			break;
+		case OB_UNDECORATE_APP :
+			state = ob_undecorate_app(ob,&dataNode);
 			break;
 		default :
 			syslog(LOG_INFO,"no defined method");
@@ -1575,7 +1620,7 @@ int  socket_xml_exec(void)
 	else{
 		syslog(LOG_INFO,"parse buf to xml ok");
 	}
-	return;
+//	return;
 	exec_socket_cmd(&obSocket,&sendPtr,&sendBufSize,SOCKET_BUF_SIZE);
 	sendResult=sendto(sockfd, sendPtr, sendBufSize, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));	
 	//syslog(LOG_INFO,"ack buf size ->%d->%d->%s",sendResult,sendBufSize,sendPtr);

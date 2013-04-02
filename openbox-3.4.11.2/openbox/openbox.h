@@ -129,7 +129,8 @@ typedef enum {
 	OB_GET_SYSTEM,			//19
 	OB_SHOW_DESKTOP,		//20
 	OB_RAISE_APP,			//21
-	OB_FOCUS_APP			//22
+	OB_FOCUS_APP,			//22
+	OB_UNDECORATE_APP			//22
 }WM_METHOD;
 typedef struct{
 	int winid;
