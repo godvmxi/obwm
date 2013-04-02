@@ -864,6 +864,55 @@ int main_init(int argc, char **argv)
 
        return(0);
 }
+xmlNodePtr create_xml_from_client(ObClient *c)
+{
+	char tmp[XML_BUF_SIZE];
+	char *p =tmp;	
+	//xmlNodePtr app  = xmlNewChild(*headNode,NULL,BAD_CAST("app"),NULL);
+	xmlNodePtr app  = xmlNewNode(NULL,BAD_CAST("app"));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->pid);
+	xmlNewChild(app,NULL,BAD_CAST "pid",BAD_CAST(tmp));
+	xmlNewChild(app,NULL,BAD_CAST "name",BAD_CAST(c->name));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->window);
+	xmlNewChild(app,NULL,BAD_CAST "winid",BAD_CAST(tmp));
+	xmlNewChild(app,NULL,BAD_CAST "title",BAD_CAST(c->title));
+	xmlNewChild(app,NULL,BAD_CAST "cmd",BAD_CAST(c->wm_command));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->desktop);
+	xmlNewChild(app,NULL,BAD_CAST "desktop",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->area.x);
+	xmlNewChild(app,NULL,BAD_CAST "x",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->area.y);
+	xmlNewChild(app,NULL,BAD_CAST "y",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->area.width);
+	xmlNewChild(app,NULL,BAD_CAST "width",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->area.height);
+	xmlNewChild(app,NULL,BAD_CAST "height",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->above);
+	xmlNewChild(app,NULL,BAD_CAST "above",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->below);
+	xmlNewChild(app,NULL,BAD_CAST "below",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->type);
+	xmlNewChild(app,NULL,BAD_CAST "type",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->max_horz);
+	xmlNewChild(app,NULL,BAD_CAST "horz",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->max_vert);
+	xmlNewChild(app,NULL,BAD_CAST "vert",BAD_CAST(tmp));
+	return app;
+	
+}
+
 void *get_client_from_app_info(OB_SOCKET *ob)
 {
 	ObClient *obc = NULL;
@@ -940,20 +989,28 @@ int ob_set_full_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 int ob_set_max_app(OB_SOCKET *ob,xmlNodePtr *headNode){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob max app");
-	static gboolean max = TRUE;
-	if(max)
-		max = FALSE;
-	else
-		max = TRUE;
-	
-	if(it != NULL)
-	{
-		client_maximize(it,max,0);    
-		client_activate(it,TRUE,TRUE,TRUE,TRUE,TRUE);
+	if(it != NULL){
+		if(it->max_vert && it->max_horz)
+		{
+			client_maximize(it,FALSE,0); 
+		}
+		else
+		{
+			client_maximize(it,TRUE,0); 
+		}
+		
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
+		xmlNodePtr app = create_xml_from_client(it);
+		xmlAddChild(*headNode,app);
 		return 1;
 	}
 	else
+	{
+		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "can find window id"); 
+	
 		return -1;
+	}
+//		client_activate(it,TRUE,TRUE,TRUE,TRUE,TRUE);
 }
 int ob_set_min_app(OB_SOCKET *ob,xmlNodePtr *headNode){
     ObClient *it = get_client_from_app_info(ob);
@@ -1012,8 +1069,9 @@ int ob_raise(OB_SOCKET *ob,xmlNodePtr *headNode)
     ObClient *it = get_client_from_app_info(ob);
 	if(it != NULL)
 	{
-		client_move(it,10,10);
-		client_fullscreen(it,TRUE);
+		//client_move(it,10,10);
+		client_activate(it,TRUE,TRUE,TRUE,TRUE,TRUE);
+		//client_fullscreen(it,TRUE);
 		return 1;
 	}
 	else
@@ -1050,7 +1108,7 @@ int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 	Window *windows,*win_it;
 	ObClient *c;
 	GList *it;
-	xmlNodePtr app = NULL;
+	xmlNodePtr app = NULL,node1;
 	char tmp[XML_BUF_SIZE];
 	char *p = tmp;
 	int counter = 1;
@@ -1066,9 +1124,19 @@ int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 			*win_it = ((ObClient*)it->data)->window;
 			c= (ObClient*)it->data;
 			//syslog(LOG_INFO,"client ->%d->%d->%d->%d->%d->%d->%d->%d->%d->%d->%s->%s->%s",c->obwin.type,c->window,c->desktop,c->area.x,c->area.y,c->area.width,c->area.height,c->root_pos.x,c->root_pos.y,c->layer,c->title,c->wm_command,c->name);
+			 app = create_xml_from_client(c);
+			xmlAddChild(*headNode,app);
+		//	xmlAddChild(*headNode,app);
+		//	app  = xmlNewNode(NULL,BAD_CAST "app");
+		//	node1 = xmlNewText(BAD_CAST"other way to create content"); 
+		//	xmlAddChild(app,node1);
+		//	xmlAddChild(*headNode,app);
+			continue;
+			//not exec
+			return 1;
 			memset(p,0,XML_BUF_SIZE);
 			sprintf(tmp,"app-%d",counter++);
-			app  = xmlNewChild(*headNode,NULL,BAD_CAST(tmp),NULL);
+			app  = xmlNewChild(*headNode,NULL,BAD_CAST("app"),NULL);
 			memset(p,0,XML_BUF_SIZE);
 			sprintf(tmp,"%d",c->pid);
 			xmlNewChild(app,NULL,BAD_CAST "pid",BAD_CAST(tmp));
@@ -1383,31 +1451,31 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 			ob_reconfigure();
 			break;
 		case OB_RESIZE_APP :
-			ob_resize(ob,&dataNode);	
+			state = ob_resize(ob,&dataNode);	
 			break;
 		case OB_MOVE_APP :
-			ob_move(ob,&dataNode);
+			state = ob_move(ob,&dataNode);
 			break;
 		case OB_RESIZE_MOVE_APP :
-			ob_resize_move(ob,&dataNode);
+			state = ob_resize_move(ob,&dataNode);
 			break;
 		case OB_SEND_TO_EXTEND_APP :
-			ob_send_to_extend(ob,&dataNode);
+			state = ob_send_to_extend(ob,&dataNode);
 			break;
 		case OB_SEND_TO_MAIN_APP :
-			ob_send_to_main(ob,&dataNode);
+			state = ob_send_to_main(ob,&dataNode);
 			break;
 		case OB_GET_SYSTEM :
-			ob_get_system(ob,&dataNode);
+			state = ob_get_system(ob,&dataNode);
 			break;
 		case OB_SHOW_DESKTOP :
-			ob_get_system(ob,&dataNode);
+			state = ob_get_system(ob,&dataNode);
 			break;
 		case OB_RAISE_APP :
-			ob_raise(ob,&dataNode);
+			state = ob_raise(ob,&dataNode);
 			break;
 		case OB_FOCUS_APP :
-			ob_focus(ob,&dataNode);
+			state = ob_focus(ob,&dataNode);
 			break;
 		default :
 			syslog(LOG_INFO,"no defined method");
@@ -1422,7 +1490,7 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 	sprintf(tmp,"%d",ob->id);
 	xmlNewChild(root_node, NULL, BAD_CAST "id",BAD_CAST tmp); 
 	memset(tmp,0,20);
-	if(ob->id >0)
+	if(state >0)
 		strcpy(tmp,"OK");
 	else
 		strcpy(tmp,"ERROR");
@@ -1507,6 +1575,7 @@ int  socket_xml_exec(void)
 	else{
 		syslog(LOG_INFO,"parse buf to xml ok");
 	}
+	return;
 	exec_socket_cmd(&obSocket,&sendPtr,&sendBufSize,SOCKET_BUF_SIZE);
 	sendResult=sendto(sockfd, sendPtr, sendBufSize, 0, (struct sockaddr *)&cliaddr, sizeof(struct sockaddr));	
 	//syslog(LOG_INFO,"ack buf size ->%d->%d->%s",sendResult,sendBufSize,sendPtr);

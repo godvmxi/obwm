@@ -191,7 +191,7 @@ int socket_xml_exec(void);
 int  add_data_to_xml_node(xmlNode *node,char *key,char *value);
 int main_test(int argc, char **argv);
 void wait_on_socket(gboolean reconfigure);
-
+xmlNodePtr  create_xml_from_client(ObClient *c);
 
 
 #endif
