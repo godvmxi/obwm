@@ -474,7 +474,7 @@ void client_manage(Window window, ObPrompt *prompt)
         place.height = MIN(place.height, a->height);
 
         ob_debug("setting window size to %dx%d\n", place.width, place.height);
-
+		
         /* get the size of the client back */
         place.width -= self->frame->size.left + self->frame->size.right;
         place.height -= self->frame->size.top + self->frame->size.bottom;
@@ -2749,6 +2749,7 @@ static void client_apply_startup_state(ObClient *self,
         self->demands_attention = self->max_horz = self->max_vert = FALSE;
 
     self->undecorated = self->max_horz = self->max_vert = TRUE;
+	//RECT_SET(self->pre_max_area, 0, 0, 0, 0);
     /* move the client to its placed position, or it it's already there,
        generate a ConfigureNotify telling the client where it is.
 
@@ -2778,8 +2779,16 @@ static void client_apply_startup_state(ObClient *self,
     if (demands_attention)
         client_hilite(self, TRUE);
 
-    if (max_vert && max_horz)
+		syslog(LOG_INFO,"start up max");
+		client_maximize(self, TRUE, 0);
+		client_maximize(self, FALSE, 0);
         client_maximize(self, TRUE, 0);
+    if (max_vert && max_horz){
+		syslog(LOG_INFO,"start up max");
+		client_maximize(self, TRUE, 0);
+		client_maximize(self, FALSE, 0);
+        client_maximize(self, TRUE, 0);
+	}
     else if (max_vert)
         client_maximize(self, TRUE, 2);
     else if (max_horz)
@@ -3315,7 +3324,7 @@ static void client_iconify_recursive(ObClient *self,
 void client_iconify(ObClient *self, gboolean iconic, gboolean curdesk,
                     gboolean hide_animation)
 {
-	syslog(LOG_INFO,"iconify->%d-%d-%d",iconic,curdesk,hide_animation);
+	//syslog(LOG_INFO,"iconify->%d-%d-%d",iconic,curdesk,hide_animation);
     if (self->functions & OB_CLIENT_FUNC_ICONIFY || !iconic) {
         /* move up the transient chain as far as possible first */
         self = client_search_top_direct_parent(self);
@@ -3393,7 +3402,7 @@ void client_maximize(ObClient *self, gboolean max, gint dir)
 
 void client_shade(ObClient *self, gboolean shade)
 {
-	syslog(LOG_INFO,"shade ->%d",shade);
+//	syslog(LOG_INFO,"shade ->%d",shade);
     if ((!(self->functions & OB_CLIENT_FUNC_SHADE) &&
          shade) ||                         /* can't shade */
         self->shaded == shade) return;     /* already done */

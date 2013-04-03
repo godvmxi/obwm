@@ -1019,6 +1019,7 @@ int ob_set_max_app(OB_SOCKET *ob,xmlNodePtr *headNode){
     ObClient *it = get_client_from_app_info(ob);
 	syslog(LOG_INFO,"ob max app");
 	if(it != NULL){
+		syslog(LOG_INFO,"max->%d-%d-%d-%d",it->pre_max_area.width,it->pre_max_area.height,it->pre_max_area.x,it->pre_max_area.y);
 		if(it->max_vert && it->max_horz)
 		{
 			client_maximize(it,FALSE,0); 

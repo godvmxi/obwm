@@ -58,7 +58,7 @@ ObFrameContext mouse_button_frame_context(ObFrameContext context,
         if (b->button == button && b->state == state)
             return context;
     }
-	syslog(LOG_INFO,"mouse->%d",context);
+	//syslog(LOG_INFO,"mouse->%d",context);
     switch (context) {
     case OB_FRAME_CONTEXT_NONE:
     case OB_FRAME_CONTEXT_DESKTOP:
