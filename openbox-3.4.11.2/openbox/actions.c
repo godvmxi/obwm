@@ -329,9 +329,10 @@ static gboolean actions_interactive_begin_act(ObActionsAct *act, guint state)
 
 static void actions_interactive_end_act(void)
 {
+	syslog(LOG_INFO,"end act");
     if (interactive_act) {
         ungrab_keyboard();
-
+		syslog(LOG_INFO,"end act if");
         actions_act_unref(interactive_act);
         interactive_act = NULL;
     }
@@ -362,7 +363,7 @@ void actions_client_move(ObActionsData *data, gboolean start)
     {
         if (data->uact == OB_USER_ACTION_MOUSE_PRESS) {
             struct _ObClient *c;
-
+			syslog(LOG_INFO,"client move");
             /* usually this is sorta redundant, but with a press action
                that moves windows our from under the cursor, the enter
                event will come as a GrabNotify which is ignored, so this

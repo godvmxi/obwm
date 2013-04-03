@@ -247,8 +247,9 @@ void moveresize_start(ObClient *c, gint x, gint y, guint b, guint32 cnr)
     cur_y = start_cy;
     cur_w = start_cw;
     cur_h = start_ch;
-
+	//syslog(LOG_INFO,"moveresize_in_progress ->%d",moveresize_in_progress);
     moveresize_in_progress = TRUE;
+    //moveresize_in_progress = FALSE;
 
 #ifdef SYNC
     if (config_resize_redraw && !moving && extensions_sync &&
@@ -333,7 +334,7 @@ void moveresize_end(gboolean cancel)
 static void do_move(gboolean keyboard, gint keydist)
 {
     gint resist;
-
+	return ;
     if (keyboard) resist = keydist - 1; /* resist for one key press */
     else resist = config_resist_win;
     resist_move_windows(moveresize_client, resist, &cur_x, &cur_y);
@@ -351,7 +352,7 @@ static void do_move(gboolean keyboard, gint keydist)
 static void do_resize(void)
 {
     gint x, y, w, h, lw, lh;
-
+	return ;
     /* see if it is actually going to resize */
     x = 0;
     y = 0;
@@ -811,9 +812,8 @@ static void resize_with_keys(gint keycode, gint state)
 gboolean moveresize_event(XEvent *e)
 {
     gboolean used = FALSE;
-
     if (!moveresize_in_progress) return FALSE;
-
+	syslog(LOG_INFO,"event->%d",*e);
     if (e->type == ButtonPress) {
         if (!button) {
             start_x = e->xbutton.x_root;
@@ -823,7 +823,8 @@ gboolean moveresize_event(XEvent *e)
         used = e->xbutton.button == button;
     } else if (e->type == ButtonRelease) {
         if (!button || e->xbutton.button == button) {
-            moveresize_end(FALSE);
+            //moveresize_end(FALSE);
+            moveresize_end(TRUE);
             used = TRUE;
         }
     } else if (e->type == MotionNotify) {

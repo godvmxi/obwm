@@ -18,6 +18,7 @@ static guint32 pick_corner(gint x, gint y, gint cx, gint cy, gint cw, gint ch,
 
 void action_resize_startup(void)
 {
+	return;
     actions_register("Resize",
                      setup_func,
                      free_func,

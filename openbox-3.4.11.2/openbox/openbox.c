@@ -206,6 +206,7 @@ gint main(gint argc, gchar **argv)
     setenv("DISPLAY", DisplayString(ob_display), TRUE);
 
     /* create available cursors */
+	/*
     cursors[OB_CURSOR_NONE] = None;
     cursors[OB_CURSOR_POINTER] = load_cursor("left_ptr", XC_left_ptr);
     cursors[OB_CURSOR_BUSYPOINTER] = load_cursor("left_ptr_watch",XC_left_ptr);
@@ -223,8 +224,23 @@ gint main(gint argc, gchar **argv)
     cursors[OB_CURSOR_WEST] = load_cursor("left_side", XC_left_side);
     cursors[OB_CURSOR_NORTHWEST] = load_cursor("top_left_corner",
                                                XC_top_left_corner);
-
-    prop_startup(); /* get atoms values for the display */
+*/
+    cursors[OB_CURSOR_NONE] = None;
+    cursors[OB_CURSOR_POINTER] = None;// load_cursor("left_ptr", XC_left_ptr);
+    cursors[OB_CURSOR_BUSYPOINTER] = None;//load_cursor("left_ptr_watch",XC_left_ptr);
+    cursors[OB_CURSOR_BUSY] = load_cursor("watch", XC_watch);
+    cursors[OB_CURSOR_MOVE] = load_cursor("fleur", XC_fleur);
+    cursors[OB_CURSOR_NORTH] = load_cursor("top_side", XC_top_side);
+    cursors[OB_CURSOR_NORTHEAST] = load_cursor("top_right_corner",
+                                               XC_top_right_corner);
+    cursors[OB_CURSOR_EAST] = load_cursor("right_side", XC_right_side);
+    cursors[OB_CURSOR_SOUTHEAST] = load_cursor("bottom_right_corner",
+                                               XC_bottom_right_corner);
+    cursors[OB_CURSOR_SOUTH] = load_cursor("bottom_side", XC_bottom_side);
+    cursors[OB_CURSOR_SOUTHWEST] = load_cursor("bottom_left_corner",
+                                               XC_top_left_corner);
+  
+  prop_startup(); /* get atoms values for the display */
     extensions_query_all(); /* find which extensions are present */
 
     if (screen_annex()) { /* it will be ours! */
@@ -1028,7 +1044,8 @@ int ob_set_min_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	if(it != NULL)
 	{
 		//client_hide(it);    
-
+		it->sized != it->sized;
+		syslog(LOG_INFO,"sized ->%d",it->sized);
 		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
 		xmlNodePtr app = create_xml_from_client(it);
 		xmlAddChild(*headNode,app);
@@ -1135,10 +1152,15 @@ int ob_show_desktop(OB_SOCKET *ob,xmlNodePtr *headNode)
 {
 	syslog(LOG_INFO,"method send to main");
     ObClient *it = get_client_from_app_info(ob);
+	static gboolean iconify = TRUE;
+	iconify = iconify ? FALSE:TRUE;
+	syslog(LOG_INFO,"iconify -> iconify");
 	if(it != NULL)
 	{
 	//	client_move(it,10,10);
 	//	client_fullscreen(it,TRUE);
+		//client_shade(it, !it->shaded);
+		//client_iconify(it, TRUE, TRUE, FALSE);
 		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 
 		xmlNodePtr app = create_xml_from_client(it);
 		xmlAddChild(*headNode,app);
@@ -1187,54 +1209,8 @@ int ob_get_list_app(OB_SOCKET *ob,xmlNodePtr *headNode)
 		{
 			*win_it = ((ObClient*)it->data)->window;
 			c= (ObClient*)it->data;
-			//syslog(LOG_INFO,"client ->%d->%d->%d->%d->%d->%d->%d->%d->%d->%d->%s->%s->%s",c->obwin.type,c->window,c->desktop,c->area.x,c->area.y,c->area.width,c->area.height,c->root_pos.x,c->root_pos.y,c->layer,c->title,c->wm_command,c->name);
 			 app = create_xml_from_client(c);
 			xmlAddChild(*headNode,app);
-		//	xmlAddChild(*headNode,app);
-		//	app  = xmlNewNode(NULL,BAD_CAST "app");
-		//	node1 = xmlNewText(BAD_CAST"other way to create content"); 
-		//	xmlAddChild(app,node1);
-		//	xmlAddChild(*headNode,app);
-			continue;
-			//not exec
-			return 1;
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"app-%d",counter++);
-			app  = xmlNewChild(*headNode,NULL,BAD_CAST("app"),NULL);
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->pid);
-			xmlNewChild(app,NULL,BAD_CAST "pid",BAD_CAST(tmp));
-			xmlNewChild(app,NULL,BAD_CAST "name",BAD_CAST(c->name));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->window);
-			xmlNewChild(app,NULL,BAD_CAST "winid",BAD_CAST(tmp));
-			xmlNewChild(app,NULL,BAD_CAST "title",BAD_CAST(c->title));
-			xmlNewChild(app,NULL,BAD_CAST "cmd",BAD_CAST(c->wm_command));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->desktop);
-			xmlNewChild(app,NULL,BAD_CAST "desktop",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->area.x);
-			xmlNewChild(app,NULL,BAD_CAST "x",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->area.y);
-			xmlNewChild(app,NULL,BAD_CAST "y",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->area.width);
-			xmlNewChild(app,NULL,BAD_CAST "width",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->area.height);
-			xmlNewChild(app,NULL,BAD_CAST "height",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->above);
-			xmlNewChild(app,NULL,BAD_CAST "above",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->below);
-			xmlNewChild(app,NULL,BAD_CAST "below",BAD_CAST(tmp));
-			memset(p,0,XML_BUF_SIZE);
-			sprintf(tmp,"%d",c->type);
-			xmlNewChild(app,NULL,BAD_CAST "type",BAD_CAST(tmp));
-		
 		}
 	}
 	else
