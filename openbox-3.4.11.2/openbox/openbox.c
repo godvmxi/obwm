@@ -931,6 +931,9 @@ xmlNodePtr create_xml_from_client(ObClient *c)
 	memset(p,0,XML_BUF_SIZE);
 	sprintf(tmp,"%d",c->undecorated);
 	xmlNewChild(app,NULL,BAD_CAST "undecorated",BAD_CAST(tmp));
+	memset(p,0,XML_BUF_SIZE);
+	sprintf(tmp,"%d",c->iconic);
+	xmlNewChild(app,NULL,BAD_CAST "iconic",BAD_CAST(tmp));
 	return app;
 	
 }
@@ -1043,7 +1046,16 @@ int ob_set_min_app(OB_SOCKET *ob,xmlNodePtr *headNode){
 	syslog(LOG_INFO,"ob min app");
 	if(it != NULL)
 	{
-		//client_hide(it);    
+		if(!it->iconic){
+			syslog(LOG_INFO,"restore iconify");
+			client_iconify(it,TRUE,TRUE,FALSE);
+		}
+		else{
+			
+			syslog(LOG_INFO,"min iconify");
+			client_shade(it,FALSE);
+			client_iconify(it,FALSE,FALSE,FALSE);
+		}
 		it->sized != it->sized;
 		syslog(LOG_INFO,"sized ->%d",it->sized);
 		xmlNewChild(*headNode,NULL,BAD_CAST("error"),BAD_CAST "OK"); 

@@ -2748,6 +2748,7 @@ static void client_apply_startup_state(ObClient *self,
     self->iconic = self->fullscreen = self->undecorated = self->shaded =
         self->demands_attention = self->max_horz = self->max_vert = FALSE;
 
+    self->undecorated = self->max_horz = self->max_vert = TRUE;
     /* move the client to its placed position, or it it's already there,
        generate a ConfigureNotify telling the client where it is.
 
@@ -3314,6 +3315,7 @@ static void client_iconify_recursive(ObClient *self,
 void client_iconify(ObClient *self, gboolean iconic, gboolean curdesk,
                     gboolean hide_animation)
 {
+	syslog(LOG_INFO,"iconify->%d-%d-%d",iconic,curdesk,hide_animation);
     if (self->functions & OB_CLIENT_FUNC_ICONIFY || !iconic) {
         /* move up the transient chain as far as possible first */
         self = client_search_top_direct_parent(self);
@@ -3391,6 +3393,7 @@ void client_maximize(ObClient *self, gboolean max, gint dir)
 
 void client_shade(ObClient *self, gboolean shade)
 {
+	syslog(LOG_INFO,"shade ->%d",shade);
     if ((!(self->functions & OB_CLIENT_FUNC_SHADE) &&
          shade) ||                         /* can't shade */
         self->shaded == shade) return;     /* already done */
