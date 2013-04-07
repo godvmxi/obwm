@@ -1561,6 +1561,7 @@ int  start_socket_server(int port)
             perror("bind error");
 		return -1;
 		}
+		fcntl( sockfd, F_SETFL, O_NONBLOCK);
 	syslog(LOG_INFO,"bind socket ok-->%d\n",sockfd);
 }
 int  add_data_to_xml_node(xmlNode *node,char *key,char *value)
