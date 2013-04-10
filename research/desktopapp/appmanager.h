@@ -54,6 +54,8 @@ public slots:
     bool appProcessChanged(QProcess::ProcessState newState);
     bool homeButtonHomeMsgSlot(void* app);
     bool homeButtonBackMsgSlot(void* app);
+    bool homeButtonResizeMsgSlot(void* app);
+    bool homeButtonScreenMsgSlot(void* app);
     bool execObAppsCmdSlot(QList<APP_COM>coms,QString state,QString error);
     bool execObAppCmdSlot(APP_COM com,QString state,QString error);
     bool execObCmdTimeout();

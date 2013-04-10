@@ -27,6 +27,8 @@ AppManager::AppManager(QWidget *parent,QList<APP> apps) :
     this->homeBack->show();
     connect(this->homeBack->home,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonHomeMsgSlot(void*)));
     connect(this->homeBack->back,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonBackMsgSlot(void*)));
+    connect(this->homeBack->resize,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonResizeMsgSlot(void*)));
+    connect(this->homeBack->screen,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonScreenMsgSlot(void*)));
 
     /*
     obCall = new ObCall(this,"127.0.0.1",3333);
@@ -210,7 +212,24 @@ bool AppManager::homeButtonBackMsgSlot(void* ptr)
 
 
 }
+bool AppManager::homeButtonResizeMsgSlot(void* ptr)
+{
+    qDebug()<<"recevie resize msg";
+     //ui->textBrowser->insertPlainText("recevie resize msg\n");
+     ui->textBrowser->append("recevie back msg");
 
+     APP *app;
+}
+bool AppManager::homeButtonScreenMsgSlot(void* ptr)
+{
+    qDebug()<<"recevie screen msg";
+     //ui->textBrowser->insertPlainText("recevie screen msg\n");
+     ui->textBrowser->append("recevie back msg");
+
+
+
+
+}
 bool AppManager::execObCmd(APP_COM *com)
 {
    qDebug()<<"send in data"<<com->id<<" method->"<<com->method;
