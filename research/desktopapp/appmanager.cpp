@@ -25,6 +25,7 @@ AppManager::AppManager(QWidget *parent,QList<APP> apps) :
 
     this->homeBack = new Home();
     this->homeBack->show();
+    this->homeBack->move(300,0);
     connect(this->homeBack->home,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonHomeMsgSlot(void*)));
     connect(this->homeBack->back,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonBackMsgSlot(void*)));
     connect(this->homeBack->resize,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonResizeMsgSlot(void*)));
@@ -109,6 +110,8 @@ bool AppManager::iconClick(void *ptr)
 
 
     QProcess::ProcessState now =  app->run_main.process->state();
+
+    qDebug()<<"click"<<now;
     switch(now)
     {
     case QProcess::Starting :
@@ -142,24 +145,42 @@ bool AppManager::setSelfLayer(int desktopWinid,int homeWinid)
 bool AppManager::appProcessChanged(QProcess::ProcessState newState)
 {
     QProcess *src = dynamic_cast<QProcess*>(sender());
-    APP *app;
+    APP *app = NULL,*tmp = NULL;
    // qDebug()<<"process new state"<<newState<<" src->"<<src->pid();
     //qDebug()<<"process kill state"<<newState<<" src->"<<src->pid();
-    foreach(app,this->apps)
+    foreach(tmp,this->apps)
     {
-        if(app->run_main.process == src)
+        if(tmp->run_main.process == src)
         {
             qDebug()<<"find the process"<<src<<"  "<<app->run_main.process;
+            app = tmp;
             break;
         }
+    }
+    if(app == NULL)
+    {
+        qDebug()<<"can,t find process handle";
+        return false;
     }
     switch(newState){
     case QProcess::NotRunning:
         qDebug()<<"process is not run.."<<src->pid();
-        foreach(app,this->apps){
-
-
+        if(this->main.main  == app )
+        {
+            qDebug()<<"close main screen max app";
+            this->main.main = NULL;
         }
+        if(this->main.extend == app)
+        {
+            qDebug()<<"close extend screen max app";
+            this->main.extend = NULL;
+        }
+        if(this->main.resize == app)
+        {
+            qDebug()<<"close extend screen max app";
+            this->main.resize = NULL;
+        }
+        this->main.running.removeAll(app);
         memset(&(app->run_main.info),0,sizeof(APP_INFO));
 
         break;
@@ -178,23 +199,51 @@ bool AppManager::appProcessChanged(QProcess::ProcessState newState)
 }
 bool AppManager::showRunningApp(APP *app)
 {
-
+    app->run_main.info.max = true;
+    app->run_main.info.min = false;
+    app->run_main.info.method = OB_SET_MAX;
+    this->execObCmd(&app->run_main.info);
 }
 
 bool AppManager::startAppFromButton(APP *app)
 {
+    qDebug()<<"start app "<<app->cmd<<app->run_main.process->state();
     app->run_main.process->start(app->cmd);
+    qDebug()<<"create pid ->";
     qDebug()<<"create pid ->"<<app->run_main.process->pid();
     app->run_main.info.pid = app->run_main.process->pid();
     this->main.running.append(app);
+    //add
+    this->main.main = app;
     return true;
 }
 
 
-bool AppManager::homeButtonHomeMsgSlot(void* app)
+bool AppManager::homeButtonHomeMsgSlot(void* ptr)
 {
     qDebug()<<"recevie home msg";
     ui->textBrowser->insertPlainText("recevie home msg\n");
+    APP *app = NULL,*tmp= NULL;
+    this->main.main = NULL;
+    this->main.extend = NULL;
+    foreach(tmp,this->main.running)
+    {
+        if(tmp == this->main.resize){
+            qDebug()<<"current windows is resize window";
+            continue;
+        }
+        else
+        {
+            tmp->run_main.info.min = true;
+            tmp->run_main.info.method = OB_SET_MIN;
+            this->execObCmd(&tmp->run_main.info);
+        }
+    }
+
+
+
+    return true;
+
 }
 
 bool AppManager::homeButtonBackMsgSlot(void* ptr)
@@ -203,12 +252,12 @@ bool AppManager::homeButtonBackMsgSlot(void* ptr)
      //ui->textBrowser->insertPlainText("recevie back msg\n");
      ui->textBrowser->append("recevie back msg");
 
-     APP *app;
-     foreach(app,this->main.running)
+     if(this->main.main != NULL)
      {
-
-        ui->textBrowser->append(QString("APP WINID ->%1").arg(app->run_main.info.pid));
+         this->main.main->run_main.process->close();
+         this->main.main = NULL;
      }
+
 
 
 }
@@ -242,6 +291,7 @@ bool AppManager::execObCmdAndWait(APP_COM *com,int timeoutMs)
     this->timeout = false;
     qDebug()<<"wait for result ->",timeoutMs;
     this->timer->start(timeoutMs);
+    while(this->timer->isActive());
     if(!this->timeout)
     {
         *com = this->appCom;
@@ -263,13 +313,14 @@ bool AppManager::execObAppsCmdSlot(QList<APP_COM>coms,QString state,QString erro
 
 bool AppManager::execObAppCmdSlot(APP_COM com,QString state,QString error)
 {
+    this->appCom = com;
     if(this->timer->isActive())
         this->timer->stop();
     else
     {
 
         qDebug()<<"receiver data ????"<<state<<error<<"  "<<com.id<<"  "<<com.method << com.winid;
-        this->appCom = com;
+
     }
 
 }

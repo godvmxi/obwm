@@ -17,7 +17,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>280</x>
+      <x>300</x>
       <y>10</y>
       <width>151</width>
       <height>51</height>
@@ -55,6 +55,19 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="text">
      <string>Close</string>
+    </property>
+   </widget>
+   <widget class="QCalendarWidget" name="calendarWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>288</width>
+      <height>177</height>
+     </rect>
+    </property>
+    <property name="whatsThis">
+     <string>States</string>
     </property>
    </widget>
   </widget>

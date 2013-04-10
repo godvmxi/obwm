@@ -23,13 +23,14 @@ DesktopApp::DesktopApp(QWidget *parent) :
 
 
     ui->setupUi(this);
+    this->move(0,0);
     this->appManager = new AppManager(this,apps);
     this->appManager->setGeometry(200,200,1000,600);
 
 
-    IconPushButton *test = new IconPushButton(this,NULL);
-    test->setGeometry(20,20,100,100);
-    connect(test,SIGNAL(buttonClick(void*)),this,SLOT(setSelfLayer()));
+    //IconPushButton *test = new IconPushButton(this,NULL);
+   // test->setGeometry(20,20,100,100);
+    //connect(test,SIGNAL(buttonClick(void*)),this,SLOT(setSelfLayer()));
     ui->label_winid->setText(QString("winid-> %1").arg(this->winId()));
 
     obCall = new ObCall(this,"127.0.0.1",3333);

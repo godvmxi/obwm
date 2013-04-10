@@ -21,6 +21,7 @@ typedef struct{
     QStack<APP *>stack;
     APP *main;
     APP *extend;
+    APP *resize;
 }SCREEN;
 
 namespace Ui {

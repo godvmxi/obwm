@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'appmanager.h'
 **
-** Created: Wed Apr 10 14:13:11 2013
+** Created: Wed Apr 10 14:49:39 2013
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.4)
 **
 ** WARNING! All changes made in this file will be lost!

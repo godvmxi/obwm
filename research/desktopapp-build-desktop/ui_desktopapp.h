@@ -14,6 +14,7 @@
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
+#include <QtGui/QCalendarWidget>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
 #include <QtGui/QMainWindow>
@@ -29,6 +30,7 @@ public:
     QLabel *label;
     QLabel *label_winid;
     QPushButton *pushButton;
+    QCalendarWidget *calendarWidget;
 
     void setupUi(QMainWindow *DesktopApp)
     {
@@ -39,13 +41,16 @@ public:
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         label = new QLabel(centralWidget);
         label->setObjectName(QString::fromUtf8("label"));
-        label->setGeometry(QRect(280, 10, 151, 51));
+        label->setGeometry(QRect(300, 10, 151, 51));
         label_winid = new QLabel(centralWidget);
         label_winid->setObjectName(QString::fromUtf8("label_winid"));
         label_winid->setGeometry(QRect(470, 10, 421, 41));
         pushButton = new QPushButton(centralWidget);
         pushButton->setObjectName(QString::fromUtf8("pushButton"));
         pushButton->setGeometry(QRect(810, 10, 90, 28));
+        calendarWidget = new QCalendarWidget(centralWidget);
+        calendarWidget->setObjectName(QString::fromUtf8("calendarWidget"));
+        calendarWidget->setGeometry(QRect(0, 0, 288, 177));
         DesktopApp->setCentralWidget(centralWidget);
 
         retranslateUi(DesktopApp);
@@ -63,6 +68,9 @@ public:
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:16pt; color:#ff0000;\">Desktop APP</span></p></body></html>", 0, QApplication::UnicodeUTF8));
         label_winid->setText(QApplication::translate("DesktopApp", "WINID", 0, QApplication::UnicodeUTF8));
         pushButton->setText(QApplication::translate("DesktopApp", "Close", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_WHATSTHIS
+        calendarWidget->setWhatsThis(QApplication::translate("DesktopApp", "States", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_WHATSTHIS
     } // retranslateUi
 
 };
