@@ -42,6 +42,9 @@ public:
    //APP_COM execObCmd();
     Home *homeBack;
 
+    bool setSelfLayer(int desktopWinid,int homeWinid);
+    void cleanProcess(void);
+
 public slots:
     //bool update_app(APP_COM app);
     //bool update_apps_list(QList<APP_COM> apps);
@@ -68,13 +71,13 @@ private:
     ObCall *obCall;
 
 
-    bool setSelfLayer(void);
+
     bool showRunningApp(APP *app);
     bool startAppFromButton(APP *app);
 
     bool execObCmd(APP_COM *);
     bool execObCmdAndWait(APP_COM *,int timeoutMs);
-    bool setSelfLayer(int desktopWinid,int homeWinid);
+
     bool getAppInfoFromWinid(APP_COM *app);
 };
 

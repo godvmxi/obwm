@@ -28,13 +28,18 @@ AppManager::AppManager(QWidget *parent,QList<APP> apps) :
     connect(this->homeBack->home,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonHomeMsgSlot(void*)));
     connect(this->homeBack->back,SIGNAL(buttonClick(void*)),this,SLOT(homeButtonBackMsgSlot(void*)));
 
+    /*
     obCall = new ObCall(this,"127.0.0.1",3333);
     connect(this,SIGNAL(execObCmdSignal(APP_COM)),this->obCall,SLOT(call(APP_COM)));
     connect(this->obCall,SIGNAL(returnDate(APP_COM,QString,QString)),this,SLOT(execObAppCmdSlot(APP_COM,QString,QString)));
+
+    */
     ui->label_winid->setText(QString("winid %1  %2  %3").arg(parent->winId()).arg(this->winId()).arg(this->homeBack->winId()));
+
+
     qDebug()<<parent->winId()<<"   "<<this->winId() <<"   "<<this->homeBack->winId();
 
-    this->setSelfLayer(parent->winId(),this->homeBack->winId());
+    //this->setSelfLayer(parent->winId(),this->homeBack->winId());
 
 
 
@@ -98,6 +103,8 @@ bool AppManager::iconClick(void *ptr)
     msg.sprintf("from button ->%d",app->max_run);
     ui->label_status->setText(msg);
 
+    //this->setSelfLayer((QWidget *(this->parent()))->winId(),this->homeBack->winId());
+
 
     QProcess::ProcessState now =  app->run_main.process->state();
     switch(now)
@@ -117,9 +124,14 @@ bool AppManager::iconClick(void *ptr)
 bool AppManager::setSelfLayer(int desktopWinid,int homeWinid)
 {
 
+    qDebug()<<"desktop id ->"<< desktopWinid <<"fuck ->"<<homeWinid;
+
+
+
     this->appCom.method = OB_SET_BOTTOM;
     this->appCom.winid = desktopWinid;
     execObCmd(&this->appCom);
+
     this->appCom.method = OB_SET_TOP;
     this->appCom.winid = homeWinid;
     execObCmd(&this->appCom);
@@ -129,8 +141,8 @@ bool AppManager::appProcessChanged(QProcess::ProcessState newState)
 {
     QProcess *src = dynamic_cast<QProcess*>(sender());
     APP *app;
-    qDebug()<<"process new state"<<newState<<" src->"<<src->pid();
-    qDebug()<<"process kill state"<<newState<<" src->"<<src->pid();
+   // qDebug()<<"process new state"<<newState<<" src->"<<src->pid();
+    //qDebug()<<"process kill state"<<newState<<" src->"<<src->pid();
     foreach(app,this->apps)
     {
         if(app->run_main.process == src)
@@ -141,15 +153,20 @@ bool AppManager::appProcessChanged(QProcess::ProcessState newState)
     }
     switch(newState){
     case QProcess::NotRunning:
-        //src->kill();
-        //src->terminate();
-        //qDebug()<<"fuck";
+        qDebug()<<"process is not run.."<<src->pid();
+        foreach(app,this->apps){
+
+
+        }
+        memset(&(app->run_main.info),0,sizeof(APP_INFO));
 
         break;
     case QProcess::Running:
-        //getAppInfoFromWinid();
+        qDebug()<<"process is running.."<<src->pid();
+        //getAppInfoFromWinid(*(app->run_main.info));
         break;
     case QProcess::Starting:
+        qDebug()<<"process is staring.."<<src->pid();
         break;
     default :
         break;
@@ -196,7 +213,7 @@ bool AppManager::homeButtonBackMsgSlot(void* ptr)
 
 bool AppManager::execObCmd(APP_COM *com)
 {
-   // qDebug()<<"send in data"<<com->id<<" method->"<<com->method;
+   qDebug()<<"send in data"<<com->id<<" method->"<<com->method;
     emit execObCmdSignal(*com);
 }
 
@@ -231,7 +248,8 @@ bool AppManager::execObAppCmdSlot(APP_COM com,QString state,QString error)
         this->timer->stop();
     else
     {
-        qDebug()<<"receiver data"<<state<<error<<"  "<<com.id<<"  "<<com.method;
+
+        qDebug()<<"receiver data ????"<<state<<error<<"  "<<com.id<<"  "<<com.method << com.winid;
         this->appCom = com;
     }
 
@@ -249,5 +267,14 @@ bool AppManager::getAppInfoFromWinid(APP_COM *app)
         result = execObCmdAndWait(app,2000);
       } while(!result);
      ui->textBrowser->append(QString("winid %1 -- %2").arg(app->pid).arg(app->winid));
+}
+void AppManager::cleanProcess(void)
+{
+    APP *app;
+    foreach(app,this->apps)
+    {
+        app->run_main.process->close();
+        app->run_extend.process->close();
+    }
 }
 

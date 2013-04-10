@@ -21,7 +21,7 @@ void ObCall::initSocket()
 
 void ObCall::call(APP_COM appinfo)
 {
-    //qDebug()<<"get data"<<appinfo.id<<" method->"<<appinfo.method;
+    qDebug()<<"get data"<<appinfo.id<<" method->"<<appinfo.method;
     QString xmlStr = genXML(appinfo);
     udp->writeDatagram(qPrintable(xmlStr),QHostAddress(this->ipv4),this->port);
     //qDebug()<<xmlStr;
@@ -94,13 +94,14 @@ void ObCall::receiveData()
         //qDebug()<<datagram.data();
         returnAppInfo = xmlToAppcom(datagram);
 //        qDebug()<<"xml ack data ->"<<this->returnAppInfo
+        qDebug()<<returnAppInfo.id<<returnAppInfo.pid<<returnAppInfo.winid;
         emit returnDate(returnAppInfo,state,error);
     }
 }
 
 APP_COM ObCall::xmlToAppcom(QByteArray xml)
 {
-    APP_COM app;
+    //APP_COM app;
     QDomDocument doc("xml");
     doc.setContent(xml);
     QDomElement xmlRoot = doc.documentElement();

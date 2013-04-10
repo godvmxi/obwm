@@ -8,12 +8,15 @@ Home::Home(QWidget *parent) :
     ui->setupUi(this);
     home = new IconPushButton();
     back = new IconPushButton();
+    resize = new IconPushButton();
     this->setFixedSize(300,200);
     home->setIconText("Home");
     back->setIconText("Back");
+    resize->setIconText("Resize");
     QHBoxLayout *mainLayout = new QHBoxLayout();
     mainLayout->addWidget(home);
     mainLayout->addWidget(back);
+    mainLayout->addWidget(resize);
     this->setLayout(mainLayout);
 
     QPalette palette;

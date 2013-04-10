@@ -48,8 +48,8 @@
   <widget class="QTextBrowser" name="textBrowser">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>240</y>
+     <x>10</x>
+     <y>230</y>
      <width>341</width>
      <height>251</height>
     </rect>

@@ -20,6 +20,7 @@ public:
     ~Home();
     IconPushButton *home;
     IconPushButton *back;
+    IconPushButton *resize;
 
 private:
     Ui::Home *ui;

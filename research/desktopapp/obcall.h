@@ -25,6 +25,7 @@ private:
     QString error;
     QString ipv4;
     int port;
+    APP_COM app;
 
 
 public slots:

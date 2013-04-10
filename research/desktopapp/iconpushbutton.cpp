@@ -34,7 +34,7 @@ void IconPushButton::mousePressEvent(QMouseEvent *ev)
 }
 bool IconPushButton::setIconText(QString text)
 {
-    //this->setText(text);
+    this->setText(text);
 }
 
 /*

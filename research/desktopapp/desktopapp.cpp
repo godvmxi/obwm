@@ -29,12 +29,19 @@ DesktopApp::DesktopApp(QWidget *parent) :
 
     IconPushButton *test = new IconPushButton(this,NULL);
     test->setGeometry(20,20,100,100);
+    connect(test,SIGNAL(buttonClick(void*)),this,SLOT(setSelfLayer()));
     ui->label_winid->setText(QString("winid-> %1").arg(this->winId()));
-            /*
-    obCall = new ObCall(this,"10.140.28.32",3333);
+
+    obCall = new ObCall(this,"127.0.0.1",3333);
     connect(this->appManager,SIGNAL(execObCmdSignal(APP_COM)),this->obCall,SLOT(call(APP_COM)));
     connect(this->obCall,SIGNAL(returnDate(APP_COM,QString,QString)),this->appManager,SLOT(execObAppCmdSlot(APP_COM,QString,QString)));
-*/
+
+    this->timer = new QTimer(this);
+    this->timer->setSingleShot(true);
+    connect(this->timer,SIGNAL(timeout()),this,SLOT(setSelfLayer()));
+    this->timer->start(100);
+
+
 
 }
 
@@ -44,6 +51,20 @@ DesktopApp::~DesktopApp()
 }
 void DesktopApp::closeEvent(QCloseEvent *)
 {
+    qDebug()<<"close event;";
     this->appManager->homeBack->close();
+    this->appManager->cleanProcess();
     this->appManager->close();
+}
+void DesktopApp::setSelfLayer(void)
+{
+    qDebug()<<"qtimer timerout";
+    this->appManager->setSelfLayer(this->winId(),this->appManager->homeBack->winId());
+}
+
+
+
+void DesktopApp::on_pushButton_clicked()
+{
+    this->close();
 }

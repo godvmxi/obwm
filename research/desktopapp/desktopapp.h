@@ -8,6 +8,7 @@
 #include "home.h"
 #include <QCloseEvent>
 #include "obcall.h"
+#include  <QTimer>
 
 namespace Ui {
     class DesktopApp;
@@ -20,6 +21,13 @@ class DesktopApp : public QMainWindow
 public:
     explicit DesktopApp(QWidget *parent = 0);
     ~DesktopApp();
+public slots:
+    void setSelfLayer(void);
+
+private slots:
+
+
+    void on_pushButton_clicked();
 
 private:
     Ui::DesktopApp *ui;
@@ -27,6 +35,8 @@ private:
     AppManager *appManager;
     void closeEvent(QCloseEvent *);
     ObCall *obCall;
+    QTimer *timer;
+
 
 };
 
