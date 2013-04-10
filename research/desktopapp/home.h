@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include "home.h"
+#include <QLabel>
 
 namespace Ui {
     class Home;
@@ -21,6 +22,11 @@ public:
     IconPushButton *home;
     IconPushButton *back;
     IconPushButton *resize;
+    IconPushButton *screen;
+    QLabel *homeLabel;
+    QLabel *backLabel;
+    QLabel *resizeLabel;
+    QLabel *screenLabel;
 
 private:
     Ui::Home *ui;

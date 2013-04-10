@@ -19,6 +19,8 @@ typedef struct{
     QList<APP *>top;
     QList<APP *>bottom;
     QStack<APP *>stack;
+    APP *main;
+    APP *extend;
 }SCREEN;
 
 namespace Ui {
@@ -62,7 +64,7 @@ signals:
 private:
     Ui::AppManager *ui;
     SCREEN main;
-    SCREEN extend;
+    //SCREEN extend;
     QList<APP *> apps;
 
 
