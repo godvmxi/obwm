@@ -1524,6 +1524,9 @@ int exec_socket_cmd(OB_SOCKET *ob,char **ack,int *ack_len,int ackBufSize)
 	sprintf(tmp,"%d",ob->id);
 	xmlNewChild(root_node, NULL, BAD_CAST "id",BAD_CAST tmp); 
 	memset(tmp,0,20);
+	sprintf(tmp,"%d",ob->method);
+	xmlNewChild(root_node, NULL, BAD_CAST "method",BAD_CAST tmp); 
+	memset(tmp,0,20);
 	if(state >0)
 		strcpy(tmp,"OK");
 	else
